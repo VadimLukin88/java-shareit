@@ -17,7 +17,4 @@ public class UserDto {
     @Email(groups = OnUpdate.class, message = "Некорректный e-mail пользователя")
     private final String email;
 
-    /**
-     * Написать метод toMap и сделать азменение пользователя как изменение вещи!
-     */
 }

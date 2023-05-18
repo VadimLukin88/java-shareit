@@ -8,11 +8,20 @@ import ru.practicum.shareit.request.ItemRequest;
 @Component
 public class ItemMapper {
 
-    public ItemDto mapItemToDto (Item item){
-        return new ItemDto(item.getId(), item.getName(), item.getDescription(), item.isAvailable(), item.getOwner());
+    public ItemDto mapItemToDto(Item item) {
+        return new ItemDto(item.getId(),
+                           item.getName(),
+                           item.getDescription(),
+                           item.isAvailable(),
+                           item.getOwner());
     }
 
-    public Item mapDtoToItem (ItemDto itemDto){
-        return new Item(itemDto.getId(), itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable(), itemDto.getOwner(), new ItemRequest());
+    public Item mapDtoToItem(ItemDto itemDto) {
+        return new Item(itemDto.getId(),
+                        itemDto.getName(),
+                        itemDto.getDescription(),
+                        itemDto.getAvailable(),
+                        itemDto.getOwner(),
+                        new ItemRequest());
     }
 }

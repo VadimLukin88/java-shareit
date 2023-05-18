@@ -3,14 +3,13 @@ package ru.practicum.shareit.user;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.exception.EntryAlreadyExists;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
 
 @Repository
 public class InMemUserStorage implements UserStorage {
-    private Long userId = 0L;
+    private Long id = 0L;
     private final Map<Long, User> userStorage = new HashMap<>();
 
     @Override
@@ -19,65 +18,75 @@ public class InMemUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userStorage.get(id);
+    public User getUserById(Long userId) {
+        isUserExist(userId);
+        return userStorage.get(userId);
     }
 
     @Override
     public User createUser(User user) {
-        if (isEmailExist(user)) {
-            throw new EntryAlreadyExists("Пользователь с таким email уже существует.");
-        }
-        if (user.getEmail() == null) {
-            throw new ValidationException("Необходимо указать email пользователя.");
-        }
-        user.setId(++userId);
-        userStorage.put(userId, user);
+        isEmailExist(user);
+        user.setId(++id);
+        userStorage.put(id, user);
         return user;
     }
 
     @Override
     public User modifyUser(Long userId, User user) {
+        isUserExist(userId);
         user.setId(userId);
-        if (userStorage.containsKey(userId)) {
-            User oldUser = userStorage.get(userId);
-            if (user.getName() != null) {
-                oldUser.setName(user.getName());
+        User savedUser = userStorage.get(userId);
+
+        for (Map.Entry<String, Object> userField : user.toMap().entrySet()) {
+            Object userFieldValue = userField.getValue();
+
+            if (userFieldValue != null) {
+                switch (userField.getKey()) {
+                    case "name":
+                        savedUser.setName(userFieldValue.toString());
+                        break;
+                    case "email":
+                        isEmailExist(user);
+                        savedUser.setEmail(userFieldValue.toString());
+                        break;
+                    default:
+                        break;
+                }
             }
-            if (user.getEmail() != null && !isEmailExist(user)) {
-                oldUser.setEmail(user.getEmail());
-            } else if (user.getEmail() != null && isEmailExist(user)) {
-                throw new EntryAlreadyExists("Пользователь с таким email уже существует.");
-            }
-            userStorage.put(userId, oldUser);
-        } else {
-            throw new DataNotFoundException(String.format("Пользователь с Id = %s не найден!", userId));
         }
-        return userStorage.get(userId);
+        return userStorage.put(userId, savedUser);
     }
 
     @Override
-    public void deleteUser(Long id) {
-        if (userStorage.containsKey(id)) {
-            userStorage.remove(id);
-        } else {
-            throw new DataNotFoundException(String.format("Пользователь с Id = %s не найден!", id));
-        }
+    public void deleteUser(Long userId) {
+        isUserExist(userId);
+        userStorage.remove(id);
     }
 
     @Override
-    public boolean isUserExist(Long id) {
-        return userStorage.containsKey(id);
+    public void isUserExist(Long userId) {
+        if (!userStorage.containsKey(userId)) {
+            throw new DataNotFoundException(String.format("Пользователь с Id = %s не найден", userId));
+        }
     }
 
-    private boolean isEmailExist(User user){
-        Optional<User> existUser = userStorage.values()
-                .stream()
-                .filter(u -> user.getEmail().equals(u.getEmail())).findFirst();
-        if (existUser.isEmpty()) {
-            return false;
+    private void isEmailExist(User user) {
+        Optional<User> existUser = Optional.empty();
+
+        if (user.getId() != null) {
+            existUser = userStorage.values()
+                                  .stream()
+                                  .filter(u -> user.getEmail().equals(u.getEmail()))
+                                  .filter(u -> !user.getId().equals(u.getId()))
+                                  .findFirst();
         } else {
-            return !user.getId().equals(existUser.get().getId());
+            existUser = userStorage.values()
+                                   .stream()
+                                   .filter(u -> user.getEmail().equals(u.getEmail()))
+                                   .findFirst();
+        }
+        if (existUser.isPresent()) {
+            throw new EntryAlreadyExists(String.format("Пользователь с email = %s уже существует", user.getEmail()));
         }
     }
 }

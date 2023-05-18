@@ -18,8 +18,9 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService itemService;
+
     @Autowired
-    public ItemController (ItemService itemService) {
+    public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
 
@@ -45,6 +46,7 @@ public class ItemController {
     public List<ItemDto> findItems(@RequestParam String text) {
         return itemService.findItems(text);
     }
+
     @GetMapping
     public List<ItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.getAllUserItems(userId);

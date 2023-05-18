@@ -8,13 +8,13 @@ public interface UserStorage {
 
     List<User> getAllUsers();
 
-    User getUserById(Long id);
+    User getUserById(Long userId);
 
     User createUser(User user);
 
     User modifyUser(Long userId, User user);
 
-    void deleteUser(Long id);
+    void deleteUser(Long userId);
 
-    boolean isUserExist(Long id);
+    void isUserExist(Long userId);
 }

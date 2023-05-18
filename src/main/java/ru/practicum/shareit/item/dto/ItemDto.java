@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.dto.OnCreate;
 import ru.practicum.shareit.user.dto.OnUpdate;
 
@@ -30,14 +29,14 @@ public class ItemDto {
     private Long owner;
 //    private ItemRequest request;
 
-    public Map<String, Object> toMap(){
+    public Map<String, Object> toMap() {
         Map<String, Object> item = new HashMap<>();
 
-        item.put("id", getId());
-        item.put("name", getName());
-        item.put("description", getDescription());
-        item.put("available", getAvailable());
-        item.put("owner", getOwner());
+        item.put("id", id);
+        item.put("name", name);
+        item.put("description", description);
+        item.put("available", available);
+        item.put("owner", owner);
         return item;
     }
 }

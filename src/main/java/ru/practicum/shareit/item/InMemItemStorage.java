@@ -3,10 +3,7 @@ package ru.practicum.shareit.item;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -39,16 +36,20 @@ public class InMemItemStorage implements ItemStorage {
     @Override
     public List<Item> findItems(String text) {    // поиск вещи по названию/описанию
         String searchText = text.toLowerCase();
+        SortedSet<Item> result = new TreeSet<>(Comparator.comparingLong(Item::getId));
 
-        List<Item> searchResult = new ArrayList<>(itemStorage.values().stream()
+        result.addAll(itemStorage.values().stream()     // ищем в названии/имени
             .filter(item -> item.getName().toLowerCase().contains(searchText))
-            .collect(Collectors.toList()));
+            .filter(Item::isAvailable)
+            .collect(Collectors.toSet()));
 
-        searchResult.addAll(itemStorage.values()
+        result.addAll(itemStorage.values()  // ищем в описании
             .stream()
             .filter(item -> item.getDescription().toLowerCase().contains(searchText))
-            .collect(Collectors.toList()));
-        return searchResult;
+            .filter(Item::isAvailable)
+            .collect(Collectors.toSet()));
+
+        return new ArrayList<Item>(result);
 
     }
 

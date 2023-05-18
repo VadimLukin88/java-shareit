@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * TODO Sprint add-controllers.
@@ -17,10 +18,10 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @Validated
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    public UserController (UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -30,25 +31,25 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUserById (@PathVariable Long userId) {
+    public UserDto getUserById(@PathVariable Long userId) {
         return userService.getUserById(userId);
     }
 
     @PostMapping
     @Validated(OnCreate.class)
-    public UserDto createUser (@Valid @RequestBody UserDto userDto) {
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         return userService.createUser(userDto);
     }
 
     @PatchMapping("/{userId}")
     @Validated(OnUpdate.class)
-    public UserDto modifyUser (@PathVariable Long userId, @Valid @RequestBody UserDto userDto) {
+    public UserDto modifyUser(@PathVariable Long userId, @Valid @RequestBody UserDto userDto) {
         return userService.modifyUser(userId, userDto);
     }
 
     @DeleteMapping("/{userId}")
-    public String deleteUser (@PathVariable Long userId) {
+    public Map<String, String> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
-        return String.format("Пользователь с Id = %s удалён.", userId);
+        return Map.of("Result", String.format("Пользователь с Id = %s удалён.", userId));
     }
 }

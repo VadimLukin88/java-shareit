@@ -7,6 +7,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,9 +27,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public ItemDto createItem(Long userId, ItemDto itemDto) {    // создаём вещь
-        if (!userStorage.isUserExist(userId)) {
-            throw new DataNotFoundException(String.format("Пользователь с Id = %s не найден", userId));
-        }
+        userStorage.isUserExist(userId);
         itemDto.setOwner(userId);
         Item item = itemMapper.mapDtoToItem(itemDto);
 
@@ -39,32 +38,35 @@ public class ItemServiceImpl implements ItemService {
         if (!itemStorage.isExist(itemId)) {
             throw new DataNotFoundException(String.format("Вещь с Id = %s не найдена", itemId));
         }
+        userStorage.isUserExist(userId);
         Item savedItem = itemStorage.getItem(itemId);
 
         if (!userId.equals(savedItem.getOwner())) {
             throw new DataNotFoundException(String.format("Пользователь с Id = %s не является владельцем вещи с Id = %s", userId, itemId));
         }
         for (Map.Entry<String, Object> itemField : itemDto.toMap().entrySet()) {
-            if (itemField.getValue() != null) {
+            Object itemFieldValue = itemField.getValue();
+
+            if (itemFieldValue != null) {
                 switch (itemField.getKey()) {
                     case "name" :
-                            savedItem.setName(itemField.getValue().toString());
+                            savedItem.setName(itemFieldValue.toString());
                             break;
                     case "description" :
-                            savedItem.setDescription(itemField.getValue().toString());
+                            savedItem.setDescription(itemFieldValue.toString());
                             break;
                     case "available" :
-                            savedItem.setAvailable((Boolean) itemField.getValue());
+                            savedItem.setAvailable((Boolean) itemFieldValue);
                             break;
                     case "owner":
-                            Long id = (Long) itemField.getValue();
+                            Long id = (Long) itemFieldValue;
                             if (!id.equals(savedItem.getOwner())) {
                                 throw new DataNotFoundException("Нельзя поменять владельца вещи.");
                             }
                             savedItem.setOwner(id);
-                        break;
+                            break;
                     default:
-                        break;
+                            break;
                 }
             }
         }
@@ -76,12 +78,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public List<ItemDto> findItems(String text) {    // поиск вещи по названию/описанию
+        if (text.isBlank()) return new ArrayList<>();   // если строка для поиска пустая, возвращаем пустой список
         return itemStorage.findItems(text).stream()
                                           .map(item -> itemMapper.mapItemToDto(item))
                                           .collect(Collectors.toList());
     }
 
     public List<ItemDto> getAllUserItems(Long userId) {    // запрос всех вещей пользователя
+        userStorage.isUserExist(userId);
         return itemStorage.getAllUserItems(userId).stream()
                                                   .map(item -> itemMapper.mapItemToDto(item))
                                                   .collect(Collectors.toList());

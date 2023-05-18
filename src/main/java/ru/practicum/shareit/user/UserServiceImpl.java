@@ -15,7 +15,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Autowired
-    public UserServiceImpl (UserStorage userStorage, UserMapper userMapper) {
+    public UserServiceImpl(UserStorage userStorage, UserMapper userMapper) {
         this.userStorage = userStorage;
         this.userMapper = userMapper;
     }
@@ -23,13 +23,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAllUsers() {
         return userStorage.getAllUsers().stream()
-            .map(user -> userMapper.mapUserToDto(user))
+            .map(userMapper::mapUserToDto)
             .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto getUserById(Long id) {
-        return userMapper.mapUserToDto(userStorage.getUserById(id));
+    public UserDto getUserById(Long userId) {
+        return userMapper.mapUserToDto(userStorage.getUserById(userId));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long id) {
-        userStorage.deleteUser(id);
+    public void deleteUser(Long userId) {
+        userStorage.deleteUser(userId);
     }
 }
