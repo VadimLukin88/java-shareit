@@ -16,5 +16,4 @@ public class UserDto {
     @Email(groups = OnCreate.class, message = "Некорректный e-mail пользователя")
     @Email(groups = OnUpdate.class, message = "Некорректный e-mail пользователя")
     private final String email;
-
 }

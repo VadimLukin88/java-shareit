@@ -1,5 +1,7 @@
 package ru.practicum.shareit.user;
 
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import java.util.Map;
 /**
  * TODO Sprint add-controllers.
  */
+@Slf4j
 @RestController
 @RequestMapping(path = "/users")
 @Validated
@@ -27,29 +30,35 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAllUsers() {
+        log.debug("HTTP_GET: Получен запрос на получение всех пользователей.");
         return userService.getAllUsers();
     }
 
     @GetMapping("/{userId}")
     public UserDto getUserById(@PathVariable Long userId) {
+        log.debug("HTTP_GET: Получен запрос на получение пользователя с Id = " + userId);
         return userService.getUserById(userId);
     }
 
     @PostMapping
     @Validated(OnCreate.class)
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
+        log.debug("HTTP_POST: Получен запрос на создание пользователя " + userDto);
         return userService.createUser(userDto);
     }
 
     @PatchMapping("/{userId}")
     @Validated(OnUpdate.class)
     public UserDto modifyUser(@PathVariable Long userId, @Valid @RequestBody UserDto userDto) {
+        log.debug("HTTP_PATCH: Получен запрос на изменение пользователя с Id = " + userId
+                  + ". Обновляемые данные: " + userDto);
         return userService.modifyUser(userId, userDto);
     }
 
     @DeleteMapping("/{userId}")
     public Map<String, String> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
+        log.debug("HTTP_DELETE: Получен запрос на удаление пользователя с Id = " + userId);
         return Map.of("Result", String.format("Пользователь с Id = %s удалён.", userId));
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.*;
@@ -21,11 +22,23 @@ public class InMemItemStorage implements ItemStorage {
 
     @Override
     public Item modifyItem(Item item) {    // изменяем вещь
-        long id = item.getId();
-        if (itemStorage.containsKey(id)) {
-            itemStorage.put(id, item);
+        Item savedItem = itemStorage.get(item.getId());
+        if (item.getName() != null) {
+            savedItem.setName(item.getName());
         }
-        return itemStorage.get(id);
+        if (item.getDescription() != null) {
+            savedItem.setDescription(item.getDescription());
+        }
+        if (item.getAvailable() != null) {
+            savedItem.setAvailable(item.getAvailable());
+        }
+        if (item.getOwner() != null) {
+            savedItem.setOwner(item.getOwner());
+        }
+        if (item.getRequest() != null) {
+            savedItem.setRequest(item.getRequest());
+        }
+        return itemStorage.put(savedItem.getId(), savedItem);
     }
 
     @Override
@@ -40,13 +53,13 @@ public class InMemItemStorage implements ItemStorage {
 
         result.addAll(itemStorage.values().stream()     // ищем в названии/имени
             .filter(item -> item.getName().toLowerCase().contains(searchText))
-            .filter(Item::isAvailable)
+            .filter(Item::getAvailable)
             .collect(Collectors.toSet()));
 
         result.addAll(itemStorage.values()  // ищем в описании
             .stream()
             .filter(item -> item.getDescription().toLowerCase().contains(searchText))
-            .filter(Item::isAvailable)
+            .filter(Item::getAvailable)
             .collect(Collectors.toSet()));
 
         return new ArrayList<Item>(result);
@@ -56,12 +69,14 @@ public class InMemItemStorage implements ItemStorage {
     @Override
     public List<Item> getAllUserItems(Long userId) {    // запрос всех вещей пользователя
         return itemStorage.values().stream()
-            .filter(item -> item.getOwner().equals(userId))
+            .filter(item -> item.getOwner().getId().equals(userId))
             .collect(Collectors.toList());
     }
 
     @Override
-    public boolean isExist(Long itemId) {
-        return itemStorage.containsKey(itemId);
+    public void isItemExist(Long itemId) {
+        if (!itemStorage.containsKey(itemId)) {
+            throw new DataNotFoundException(String.format("Вещь с Id = %s не найдена", itemId));
+        }
     }
 }

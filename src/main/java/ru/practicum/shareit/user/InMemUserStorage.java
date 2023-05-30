@@ -37,22 +37,12 @@ public class InMemUserStorage implements UserStorage {
         user.setId(userId);
         User savedUser = userStorage.get(userId);
 
-        for (Map.Entry<String, Object> userField : user.toMap().entrySet()) {
-            Object userFieldValue = userField.getValue();
-
-            if (userFieldValue != null) {
-                switch (userField.getKey()) {
-                    case "name":
-                        savedUser.setName(userFieldValue.toString());
-                        break;
-                    case "email":
-                        isEmailExist(user);
-                        savedUser.setEmail(userFieldValue.toString());
-                        break;
-                    default:
-                        break;
-                }
-            }
+        if (user.getEmail() != null) {
+            isEmailExist(user);
+            savedUser.setEmail(user.getEmail());
+        }
+        if (user.getName() != null) {
+            savedUser.setName(user.getName());
         }
         return userStorage.put(userId, savedUser);
     }

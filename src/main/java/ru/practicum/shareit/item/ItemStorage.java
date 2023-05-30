@@ -16,5 +16,5 @@ public interface ItemStorage {
 
     List<Item> getAllUserItems(Long userId);    // запрос всех вещей пользователя
 
-    boolean isExist(Long itemId);
+    void isItemExist(Long itemId);
 }

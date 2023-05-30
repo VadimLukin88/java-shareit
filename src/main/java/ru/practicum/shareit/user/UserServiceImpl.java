@@ -12,36 +12,34 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
-    private final UserMapper userMapper;
 
     @Autowired
-    public UserServiceImpl(UserStorage userStorage, UserMapper userMapper) {
+    public UserServiceImpl(UserStorage userStorage) {
         this.userStorage = userStorage;
-        this.userMapper = userMapper;
     }
 
     @Override
     public List<UserDto> getAllUsers() {
         return userStorage.getAllUsers().stream()
-            .map(userMapper::mapUserToDto)
+            .map(UserMapper::mapUserToDto)
             .collect(Collectors.toList());
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        return userMapper.mapUserToDto(userStorage.getUserById(userId));
+        return UserMapper.mapUserToDto(userStorage.getUserById(userId));
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        User user = userMapper.mapDtoToUser(userDto);
-        return userMapper.mapUserToDto(userStorage.createUser(user));
+        User user = UserMapper.mapDtoToUser(userDto);
+        return UserMapper.mapUserToDto(userStorage.createUser(user));
     }
 
     @Override
     public UserDto modifyUser(Long userId, UserDto userDto) {
-        User user = userMapper.mapDtoToUser(userDto);
-        return userMapper.mapUserToDto(userStorage.modifyUser(userId, user));
+        User user = UserMapper.mapDtoToUser(userDto);
+        return UserMapper.mapUserToDto(userStorage.modifyUser(userId, user));
     }
 
     @Override
