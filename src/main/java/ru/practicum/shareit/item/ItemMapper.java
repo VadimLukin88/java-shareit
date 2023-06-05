@@ -1,12 +1,13 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
     public static ItemDto mapItemToDto(Item item) {
