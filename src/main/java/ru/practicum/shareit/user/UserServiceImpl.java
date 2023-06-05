@@ -11,39 +11,39 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userStorage.getAllUsers().stream()
+        return userRepository.findAll().stream()
             .map(UserMapper::mapUserToDto)
             .collect(Collectors.toList());
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        return UserMapper.mapUserToDto(userStorage.getUserById(userId));
+        return UserMapper.mapUserToDto(userRepository.getById(userId));
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.mapDtoToUser(userDto);
-        return UserMapper.mapUserToDto(userStorage.createUser(user));
+        return UserMapper.mapUserToDto(userRepository.save(user));
     }
 
     @Override
     public UserDto modifyUser(Long userId, UserDto userDto) {
         User user = UserMapper.mapDtoToUser(userDto);
-        return UserMapper.mapUserToDto(userStorage.modifyUser(userId, user));
+        return UserMapper.mapUserToDto(userRepository.save(user));
     }
 
     @Override
     public void deleteUser(Long userId) {
-        userStorage.deleteUser(userId);
+        userRepository.deleteById(userId);
     }
 }
