@@ -4,11 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.comment.dto.CommentRequestDto;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.OnCreate;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -25,9 +28,10 @@ public class ItemController {
 
     @PostMapping
     @Validated(OnCreate.class)
-    public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody ItemDto itemDto) {
+    public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                              @Valid @RequestBody ItemDto itemDto) {
         log.info("HTTP_POST: Получен запрос на создание предмета " + itemDto);
-        return itemService.createItem(userId, itemDto);
+        return ItemMapper.mapItemToDto(itemService.createItem(userId, itemDto));
     }
 
     @PatchMapping("/{itemId}")
@@ -36,25 +40,37 @@ public class ItemController {
                               @RequestBody ItemDto itemDto) {
         log.info("HTTP_PATCH: Получен запрос на изменение предмета Id = " + itemId + " от пользователя Id = " + userId
                   + ". Обновляемые данные: " + itemDto);
-        return itemService.modifyItem(userId, itemId, itemDto);
+        return ItemMapper.mapItemToDto(itemService.modifyItem(userId, itemId, itemDto));
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@PathVariable Long itemId) {
+    public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                           @PathVariable Long itemId) {
         log.info("HTTP_GET: Получен запрос на получение предмета " + itemId);
-        return itemService.getItem(itemId);
+        return ItemMapper.mapItemToDto(itemService.getItem(userId, itemId));
     }
 
     @GetMapping("/search")
     public List<ItemDto> findItems(@RequestParam String text) {
         log.info("HTTP_GET: Получен запрос на поиск предмета. Поисковый запрос: " + text);
-        return itemService.findItems(text);
+        return itemService.findItems(text).stream()
+            .map(ItemMapper::mapItemToDto)
+            .collect(Collectors.toList());
     }
 
     @GetMapping
     public List<ItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("HTTP_GET: Получен запрос на получение всех предметов пользователя Id = " + userId);
-        return itemService.getAllUserItems(userId);
+        return itemService.getAllUserItems(userId).stream()
+            .map(ItemMapper::mapItemToDto)
+            .collect(Collectors.toList());
+    }
+
+    @PostMapping("/{itemId}/comment")
+    @Validated(OnCreate.class)
+    public CommentRequestDto addComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                        @Valid @RequestBody CommentRequestDto commentRequestDto) {
+        return null;
     }
 
 }

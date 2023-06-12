@@ -5,10 +5,12 @@ import lombok.Data;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Null;
 
 @Data
 @AllArgsConstructor
 public class UserDto {
+    @Null(groups = OnCreate.class, message = "При создании пользователя поле Id должно быть пустым/null.")
     private Long id;
     @NotBlank(groups = OnCreate.class, message = "Имя пользователя не может быть пустым")
     private final String name;

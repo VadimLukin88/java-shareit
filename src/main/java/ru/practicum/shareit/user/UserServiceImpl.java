@@ -1,12 +1,14 @@
 package ru.practicum.shareit.user;
 
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
+import javax.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -19,31 +21,50 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-            .map(UserMapper::mapUserToDto)
-            .collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override
-    public UserDto getUserById(Long userId) {
-        return UserMapper.mapUserToDto(userRepository.getById(userId));
+    public User getUserById(Long userId) {
+        // Сначала хотел сделать проверки с помощью самодельного метода existsUserById в репозитории,
+        // но потом решил, что лучше сократить кол-во запросов в базу и проверять существование пользователя через Optional
+        // Метод existsUserById оставил только для удаления пользователя (там получилось 2 запроса к БД).
+        return userRepository.findById(userId)
+                             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    @Transactional
+    public User createUser(UserDto userDto) {
         User user = UserMapper.mapDtoToUser(userDto);
-        return UserMapper.mapUserToDto(userRepository.save(user));
+        return userRepository.save(user);
     }
 
     @Override
-    public UserDto modifyUser(Long userId, UserDto userDto) {
+    @Transactional
+    public User modifyUser(Long userId, UserDto userDto) {
+        User savedUser = userRepository.findById(userId)
+                                       .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
+
         User user = UserMapper.mapDtoToUser(userDto);
-        return UserMapper.mapUserToDto(userRepository.save(user));
+
+        if (user.getEmail() != null ) {
+            savedUser.setEmail(user.getEmail());
+        }
+        if (user.getName() != null) {
+            savedUser.setName(user.getName());
+        }
+        return userRepository.save(savedUser);
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long userId) {
+        if (!userRepository.existsUserById(userId)) {
+            throw new DataNotFoundException("Пользователь с Id " + userId + " не найден.");
+        }
         userRepository.deleteById(userId);
     }
+
 }

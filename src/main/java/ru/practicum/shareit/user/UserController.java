@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -28,28 +29,31 @@ public class UserController {
     @GetMapping
     public List<UserDto> getAllUsers() {
         log.info("HTTP_GET: Получен запрос на получение всех пользователей.");
-        return userService.getAllUsers();
+        return userService.getAllUsers().stream()
+            .map(UserMapper::mapUserToDto)
+            .collect(Collectors.toList());
     }
 
     @GetMapping("/{userId}")
     public UserDto getUserById(@PathVariable Long userId) {
         log.info("HTTP_GET: Получен запрос на получение пользователя с Id = " + userId);
-        return userService.getUserById(userId);
+        return UserMapper.mapUserToDto(userService.getUserById(userId));
     }
 
     @PostMapping
     @Validated(OnCreate.class)
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         log.info("HTTP_POST: Получен запрос на создание пользователя " + userDto);
-        return userService.createUser(userDto);
+        return UserMapper.mapUserToDto(userService.createUser(userDto));
     }
 
     @PatchMapping("/{userId}")
     @Validated(OnUpdate.class)
-    public UserDto modifyUser(@PathVariable Long userId, @Valid @RequestBody UserDto userDto) {
+    public UserDto modifyUser(@PathVariable Long userId,
+                              @Valid @RequestBody UserDto userDto) {
         log.info("HTTP_PATCH: Получен запрос на изменение пользователя с Id = " + userId
                   + ". Обновляемые данные: " + userDto);
-        return userService.modifyUser(userId, userDto);
+        return UserMapper.mapUserToDto(userService.modifyUser(userId, userDto));
     }
 
     @DeleteMapping("/{userId}")
