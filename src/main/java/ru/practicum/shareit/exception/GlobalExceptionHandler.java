@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,12 +24,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDataNotFoundException(DataNotFoundException e) {
         return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.NOT_FOUND);
     }
-
-//    @ExceptionHandler(EntryAlreadyExists.class)
-//    @ResponseBody
-//    public ResponseEntity<Map<String, String>> handleEntryAlreadyExists(EntryAlreadyExists e) {
-//        return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.CONFLICT);
-//    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
@@ -61,8 +56,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseBody
-    ResponseEntity<Map<String, String>> handleDataIntegrityViolationException (DataIntegrityViolationException e) {
+    ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
          return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.CONFLICT);
+    }
+
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseBody
+    ResponseEntity<Map<String, String>> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
 }

@@ -7,12 +7,11 @@ import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
-
+@Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(String searchName, String searchDesc);
 
-    List<Item> findItemByOwner(User user);
+    List<Item> findItemByOwnerOrderById(User owner);
 
-    boolean existsItemById(Long userId);
 }

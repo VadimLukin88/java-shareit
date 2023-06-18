@@ -3,7 +3,7 @@ package ru.practicum.shareit.user.dto;
 import lombok.Data;
 
 @Data
-public class UserResponseDto {
-    private final Long Id;
+public class UserShortDto {
+    private final Long id;
     private final String name;
 }

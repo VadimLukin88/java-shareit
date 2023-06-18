@@ -7,8 +7,6 @@ import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.user.UserMapper;
 
-import javax.persistence.Column;
-
 @Component
 public class BookingMapper {
 
@@ -20,8 +18,8 @@ public class BookingMapper {
         return new BookingResponseDto(booking.getId(),
                               booking.getStart(),
                               booking.getEnd(),
-                              ItemMapper.mapItemToResponseDto(booking.getItem()),
-                              UserMapper.mapUserToResponseDto(booking.getBooker()),
+                              ItemMapper.mapItemToShortDto(booking.getItem()),
+                              UserMapper.mapUserToShortDto(booking.getBooker()),
                               booking.getStatus());
     }
 

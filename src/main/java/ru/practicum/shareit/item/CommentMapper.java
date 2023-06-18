@@ -1,20 +1,20 @@
-package ru.practicum.shareit.comment;
+package ru.practicum.shareit.item;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.comment.dto.CommentRequestDto;
-import ru.practicum.shareit.comment.dto.CommentShortDto;
-import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
+import ru.practicum.shareit.item.dto.CommentResponseDto;
+import ru.practicum.shareit.item.dto.CommentShortDto;
+import ru.practicum.shareit.item.model.Comment;
 
 import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommentMapper {
-    public static CommentRequestDto mapCommentToDto(Comment comment) {
-        return new CommentRequestDto(comment.getId(),
+    public static CommentResponseDto mapCommentToDto(Comment comment) {
+        return new CommentResponseDto(comment.getId(),
             comment.getText(),
-            comment.getItem().getId(),
-            comment.getAuthor().getId(),
+            comment.getAuthor().getName(),
             comment.getCreated());
     }
 
