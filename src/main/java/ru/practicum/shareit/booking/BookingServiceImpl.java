@@ -35,11 +35,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDto createBooking(BookingRequestDto bookingRequestDto, Long userId) {
-        Booking newBooking = BookingMapper.mapDtoToBooking(bookingRequestDto);
-
-        if (newBooking.getStart().equals(newBooking.getEnd())) {    // проверка start time = end time
+        if (bookingRequestDto.getStart().equals(bookingRequestDto.getEnd())) {    // проверка start time = end time
             throw new ValidationException("Время начала аренды равно времени завершения аренды.");
-        } else if (newBooking.getStart().isAfter(newBooking.getEnd())) {    // проверка start time > end time
+        } else if (bookingRequestDto.getStart().isAfter(bookingRequestDto.getEnd())) {    // проверка start time > end time
             throw new ValidationException("Время начала аренды позже времени завершения аренды.");
         }
         Long itemId = bookingRequestDto.getItemId();
@@ -53,12 +51,11 @@ public class BookingServiceImpl implements BookingService {
         if (userId.equals(item.getOwner().getId())) {
             throw new DataNotFoundException("Вы не можете забронировать свою вещь.");
         }
-
-        User user = userRepository.findById(userId)
+        User booker = userRepository.findById(userId)
             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
 
-        newBooking.setItem(item);
-        newBooking.setBooker(user);
+        Booking newBooking = BookingMapper.mapDtoToBooking(bookingRequestDto, item, booker);
+
         newBooking.setStatus(BookingStatus.WAITING);
         return BookingMapper.mapBookingToDto(bookingRepository.save(newBooking));
     }
@@ -95,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getBookingByUser(Long userId, String state) {
+    public List<BookingResponseDto> getBookingByUser(Long userId, BookingState state) {
         User booker = userRepository.findById(userId)
             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
 
@@ -104,26 +101,28 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookingList;
 
         switch (state) {
-            case "ALL":
+            case ALL:
                 bookingList = bookingRepository.findByBookerOrderByStartDesc(booker);
                 break;
-            case "CURRENT":
+            case CURRENT:
                 bookingList = bookingRepository.findByBookerAndStartBeforeAndEndAfterOrderByStartDesc(booker, rightNow, rightNow);
                 break;
-            case "PAST":
+            case PAST:
                 bookingList = bookingRepository.findByBookerAndEndBeforeOrderByStartDesc(booker, rightNow);
                 break;
-            case "FUTURE":
+            case FUTURE:
                 bookingList = bookingRepository.findByBookerAndStartAfterOrderByStartDesc(booker, rightNow);
                 break;
-            case "WAITING":
+            case WAITING:
                 bookingList = bookingRepository.findByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING);
                 break;
-            case "REJECTED":
+            case REJECTED:
                 bookingList = bookingRepository.findByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED);
                 break;
+            // сначала хотел удалить default ведь теперь у нас валидация параметра происходит в контроллере.
+            // но потом решил оставить... на случай если добавлю новый параметр фильтрации и забуду его реализовать ))
             default:
-                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+                throw new ValidationException("Not implemented yet!");
         }
         return bookingList.stream()
             .map(BookingMapper::mapBookingToDto)
@@ -131,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getAllBookingOfOwner(Long userId, String state) {
+    public List<BookingResponseDto> getAllBookingOfOwner(Long userId, BookingState state) {
         User owner = userRepository.findById(userId)
             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
 
@@ -140,26 +139,26 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookingList;
 
         switch (state) {
-            case "ALL":
+            case ALL:
                 bookingList = bookingRepository.findByItem_OwnerOrderByStartDesc(owner);
                 break;
-            case "CURRENT":
+            case CURRENT:
                 bookingList = bookingRepository.findByItem_OwnerAndStartBeforeAndEndAfterOrderByStartDesc(owner, rightNow, rightNow);
                 break;
-            case "PAST":
+            case PAST:
                 bookingList = bookingRepository.findByItem_OwnerAndEndBeforeOrderByStartDesc(owner, rightNow);
                 break;
-            case "FUTURE":
+            case FUTURE:
                 bookingList = bookingRepository.findByItem_OwnerAndStartAfterOrderByStartDesc(owner, rightNow);
                 break;
-            case "WAITING":
+            case WAITING:
                 bookingList = bookingRepository.findByItem_OwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING);
                 break;
-            case "REJECTED":
+            case REJECTED:
                 bookingList = bookingRepository.findByItem_OwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED);
                 break;
             default:
-                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+                throw new ValidationException("Not implemented yet!");
         }
         return bookingList.stream()
             .map(BookingMapper::mapBookingToDto)

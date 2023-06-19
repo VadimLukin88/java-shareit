@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.OnCreate;
 
 import javax.validation.Valid;
@@ -51,14 +52,28 @@ public class BookingController {
     public List<BookingResponseDto> getBookingByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                     @RequestParam(defaultValue = "ALL", required = false) String state) {
         log.info("HTTP_GET: Получен запрос на получение всех бронирований пользоваетеля с Id = {}", userId);
-        return bookingService.getBookingByUser(userId, state);
+        BookingState bookingState;
+
+        try {
+            bookingState = BookingState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+        }
+        return bookingService.getBookingByUser(userId, bookingState);
     }
 
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllBookingOfOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                         @RequestParam(defaultValue = "ALL", required = false) String state) {
         log.info("HTTP_GET: Получен запрос на получение всех бронирований для вещей пользоваетеля с Id = {}", userId);
-        return bookingService.getAllBookingOfOwner(userId, state);
+        BookingState bookingState;
+
+        try {
+            bookingState = BookingState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+        }
+        return bookingService.getAllBookingOfOwner(userId, bookingState);
     }
 
 }
