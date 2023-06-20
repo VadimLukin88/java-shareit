@@ -27,27 +27,28 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAllUsers() {
-        log.debug("HTTP_GET: Получен запрос на получение всех пользователей.");
+        log.info("HTTP_GET: Получен запрос на получение всех пользователей.");
         return userService.getAllUsers();
     }
 
     @GetMapping("/{userId}")
     public UserDto getUserById(@PathVariable Long userId) {
-        log.debug("HTTP_GET: Получен запрос на получение пользователя с Id = " + userId);
+        log.info("HTTP_GET: Получен запрос на получение пользователя с Id = " + userId);
         return userService.getUserById(userId);
     }
 
     @PostMapping
     @Validated(OnCreate.class)
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
-        log.debug("HTTP_POST: Получен запрос на создание пользователя " + userDto);
+        log.info("HTTP_POST: Получен запрос на создание пользователя " + userDto);
         return userService.createUser(userDto);
     }
 
     @PatchMapping("/{userId}")
     @Validated(OnUpdate.class)
-    public UserDto modifyUser(@PathVariable Long userId, @Valid @RequestBody UserDto userDto) {
-        log.debug("HTTP_PATCH: Получен запрос на изменение пользователя с Id = " + userId
+    public UserDto modifyUser(@PathVariable Long userId,
+                              @Valid @RequestBody UserDto userDto) {
+        log.info("HTTP_PATCH: Получен запрос на изменение пользователя с Id = " + userId
                   + ". Обновляемые данные: " + userDto);
         return userService.modifyUser(userId, userDto);
     }
@@ -55,7 +56,8 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public Map<String, String> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
-        log.debug("HTTP_DELETE: Получен запрос на удаление пользователя с Id = " + userId);
+        log.info("HTTP_DELETE: Получен запрос на удаление пользователя с Id = " + userId);
         return Map.of("Result", String.format("Пользователь с Id = %s удалён.", userId));
     }
+
 }

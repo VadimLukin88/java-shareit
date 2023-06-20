@@ -2,25 +2,30 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.user.dto.OnCreate;
-import ru.practicum.shareit.user.dto.OnUpdate;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ItemDto {
+    @Null(groups = OnCreate.class, message = "При добавлении вещи Id назначается автоматически.")
     private Long id;
     @NotBlank(groups = OnCreate.class, message = "У вещи должно быть имя.")
-    @NotBlank(groups = OnUpdate.class, message = "Имя вещи не может быть пустым")
     private String name;
     @NotBlank(groups = OnCreate.class, message = "У вещи должно быть описание.")
-    @NotBlank(groups = OnUpdate.class, message = "Описание вещи не может быть пустым")
-    private String description;
+   private String description;
     @NotNull(groups = OnCreate.class, message = "У вещи должен быть статус бронирования.")
-    @NotNull(groups = OnUpdate.class, message = "У вещи должен быть статус бронирования (true/false).")
     private Boolean available;
     private Long owner;
+    private BookingShortDto lastBooking;
+    private BookingShortDto nextBooking;
 //    private ItemRequest request;
+    private List<CommentShortDto> comments;
 }
