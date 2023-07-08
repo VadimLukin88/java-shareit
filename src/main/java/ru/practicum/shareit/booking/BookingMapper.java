@@ -14,7 +14,7 @@ import ru.practicum.shareit.user.model.User;
 public class BookingMapper {
 
     public static Booking mapDtoToBooking(BookingRequestDto bookingDto, Item item, User booker) {
-        return new Booking(null,
+        return new Booking(bookingDto.getId(),
                            bookingDto.getStart(),
                            bookingDto.getEnd(),
                            item,

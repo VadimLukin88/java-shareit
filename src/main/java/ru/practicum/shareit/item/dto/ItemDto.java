@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.dto.OnCreate;
 
 import javax.validation.constraints.NotBlank;
@@ -15,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemDto {
-    @Null(groups = OnCreate.class, message = "При добавлении вещи Id назначается автоматически.")
+//    @Null(groups = OnCreate.class, message = "При добавлении вещи Id назначается автоматически.")
     private Long id;
     @NotBlank(groups = OnCreate.class, message = "У вещи должно быть имя.")
     private String name;
@@ -26,6 +27,6 @@ public class ItemDto {
     private Long owner;
     private BookingShortDto lastBooking;
     private BookingShortDto nextBooking;
-//    private ItemRequest request;
+    private Long requestId;
     private List<CommentShortDto> comments;
 }

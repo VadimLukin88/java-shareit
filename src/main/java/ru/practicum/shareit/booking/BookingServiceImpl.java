@@ -1,6 +1,9 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
@@ -92,32 +95,36 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getBookingByUser(Long userId, BookingState state) {
+    public List<BookingResponseDto> getBookingByUser(Long userId, BookingState state, int from, int size) {
+        LocalDateTime rightNow = LocalDateTime.now();
+
+        Sort sort =  Sort.by("start").descending();
+
+        Pageable pageable = PageRequest.of((from + 1)/size, size, sort);
+
         User booker = userRepository.findById(userId)
             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
-
-        LocalDateTime rightNow = LocalDateTime.now();
 
         List<Booking> bookingList;
 
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findByBookerOrderByStartDesc(booker);
+                bookingList = bookingRepository.findByBooker(booker, pageable);
                 break;
             case CURRENT:
-                bookingList = bookingRepository.findByBookerAndStartBeforeAndEndAfterOrderByStartDesc(booker, rightNow, rightNow);
+                bookingList = bookingRepository.findByBookerAndStartBeforeAndEndAfter(booker, rightNow, rightNow, pageable);
                 break;
             case PAST:
-                bookingList = bookingRepository.findByBookerAndEndBeforeOrderByStartDesc(booker, rightNow);
+                bookingList = bookingRepository.findByBookerAndEndBefore(booker, rightNow, pageable);
                 break;
             case FUTURE:
-                bookingList = bookingRepository.findByBookerAndStartAfterOrderByStartDesc(booker, rightNow);
+                bookingList = bookingRepository.findByBookerAndStartAfter(booker, rightNow, pageable);
                 break;
             case WAITING:
-                bookingList = bookingRepository.findByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING);
+                bookingList = bookingRepository.findByBookerAndStatus(booker, BookingStatus.WAITING, pageable);
                 break;
             case REJECTED:
-                bookingList = bookingRepository.findByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED);
+                bookingList = bookingRepository.findByBookerAndStatus(booker, BookingStatus.REJECTED, pageable);
                 break;
             // сначала хотел удалить default ведь теперь у нас валидация параметра происходит в контроллере.
             // но потом решил оставить... на случай если добавлю новый параметр фильтрации и забуду его реализовать ))
@@ -130,7 +137,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponseDto> getAllBookingOfOwner(Long userId, BookingState state) {
+    public List<BookingResponseDto> getAllBookingOfOwner(Long userId, BookingState state, int from, int size) {
+        Sort sort =  Sort.by("start").descending();
+
+        Pageable pageable = PageRequest.of(from, size, sort);
+
         User owner = userRepository.findById(userId)
             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));
 
@@ -140,22 +151,22 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findByItem_OwnerOrderByStartDesc(owner);
+                bookingList = bookingRepository.findByItem_Owner(owner, pageable);
                 break;
             case CURRENT:
-                bookingList = bookingRepository.findByItem_OwnerAndStartBeforeAndEndAfterOrderByStartDesc(owner, rightNow, rightNow);
+                bookingList = bookingRepository.findByItem_OwnerAndStartBeforeAndEndAfter(owner, rightNow, rightNow, pageable);
                 break;
             case PAST:
-                bookingList = bookingRepository.findByItem_OwnerAndEndBeforeOrderByStartDesc(owner, rightNow);
+                bookingList = bookingRepository.findByItem_OwnerAndEndBefore(owner, rightNow, pageable);
                 break;
             case FUTURE:
-                bookingList = bookingRepository.findByItem_OwnerAndStartAfterOrderByStartDesc(owner, rightNow);
+                bookingList = bookingRepository.findByItem_OwnerAndStartAfter(owner, rightNow, pageable);
                 break;
             case WAITING:
-                bookingList = bookingRepository.findByItem_OwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING);
+                bookingList = bookingRepository.findByItem_OwnerAndStatus(owner, BookingStatus.WAITING, pageable);
                 break;
             case REJECTED:
-                bookingList = bookingRepository.findByItem_OwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED);
+                bookingList = bookingRepository.findByItem_OwnerAndStatus(owner, BookingStatus.REJECTED, pageable);
                 break;
             default:
                 throw new ValidationException("Not implemented yet!");

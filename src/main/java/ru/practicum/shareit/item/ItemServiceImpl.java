@@ -14,6 +14,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -29,18 +31,21 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
-
     private final CommentRepository commentRepository;
+
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserRepository userRepository,
                            BookingRepository bookingRepository,
-                           CommentRepository commentRepository) {
+                           CommentRepository commentRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
@@ -51,7 +56,17 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = ItemMapper.mapDtoToItem(itemDto);
 
+        if (itemDto.getRequestId() != null) {
+            long reqId = itemDto.getRequestId();
+
+            ItemRequest itemRequest = itemRequestRepository.findById(reqId)
+                .orElseThrow(() -> new DataNotFoundException("Запрос с Id = " + reqId + " не найден!"));
+
+            item.setRequest(itemRequest);
+        }
+
         item.setOwner(user);
+
         return ItemMapper.mapItemToDto(itemRepository.save(item));
     }
 

@@ -1,13 +1,17 @@
 package ru.practicum.shareit.request.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.user.dto.OnCreate;
 
-import java.time.LocalDateTime;
+import javax.validation.constraints.NotBlank;
+
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemRequestDto {
-    private Long id;
+    @NotBlank(message = "Запрос должен содержать описание вещи.")
     private String description;
-    private Long requestor; // id пользователя, создавшего запрос
-    private LocalDateTime created;  // дата и время создания запроса
 }
