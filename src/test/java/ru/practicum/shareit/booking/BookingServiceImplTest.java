@@ -116,6 +116,9 @@ class BookingServiceImplTest {
             UserMapper.mapUserToShortDto(user1),
             BookingStatus.WAITING);
 
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
+
+
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user1);
 
         assertThrows(DataNotFoundException.class, () -> bookingService.createBooking(reqDto, 1L));
@@ -130,6 +133,9 @@ class BookingServiceImplTest {
             1L,
             UserMapper.mapUserToShortDto(user2),
             BookingStatus.WAITING);
+
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
@@ -148,10 +154,29 @@ class BookingServiceImplTest {
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
-        when(itemRepository.findById(anyLong())).thenThrow(new DataNotFoundException("ошибка!"));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
         assertThrows(DataNotFoundException.class, () -> bookingService.createBooking(reqDto, 2L));
     }
 
+    // создание бронирования. Вещь недоступна для бронирования
+    @Test
+    public void testCreateBookingUnavailableItem() {
+        item1.setAvailable(false);
+
+        reqDto = new BookingRequestDto(1L,
+            LocalDateTime.of(2023, 7, 5, 11, 0),
+            LocalDateTime.of(2023, 7, 10, 11, 0),
+            1L,
+            UserMapper.mapUserToShortDto(user2),
+            BookingStatus.WAITING);
+
+        booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
+
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
+
+        assertThrows(ValidationException.class, () -> bookingService.createBooking(reqDto, 2L));
+    }
 
     // подтверждение бронирования. Нормальный сценарий
     @Test
@@ -182,7 +207,39 @@ class BookingServiceImplTest {
         assertEquals(respDto.getId(), 1L, "Некорректный Id бронирования");
         assertEquals(respDto.getItem().getId(), 1L, "Некорректный Id вещи");
         assertEquals(respDto.getBooker().getId(), 2L, "Некорректный Id пользователя");
-        assertEquals(respDto.getStatus(), BookingStatus.APPROVED, "Некорректный Id пользователя");
+        assertEquals(respDto.getStatus(), BookingStatus.APPROVED, "Некорректный статус");
+    }
+
+    // отклонение заявки на бронирование. Нормальный сценарий
+    @Test
+    public void testRejectBooking() {
+        reqDto = new BookingRequestDto(1L,
+            LocalDateTime.of(2023, 7, 5, 11, 0),
+            LocalDateTime.of(2023, 7, 10, 11, 0),
+            1L,
+            UserMapper.mapUserToShortDto(user2),
+            null);
+
+        booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
+        booking1.setStatus(BookingStatus.WAITING);
+
+        Booking savedBooking = new Booking(1L,
+            LocalDateTime.of(2023, 7, 5, 11, 0),
+            LocalDateTime.of(2023, 7, 10, 11, 0),
+            item1,
+            user2,
+            BookingStatus.REJECTED);
+
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking1));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(savedBooking);
+
+        respDto = bookingService.approveBooking(1L, 1L, false);
+
+        assertNotNull(respDto, "Метод вернул null");
+        assertEquals(respDto.getId(), 1L, "Некорректный Id бронирования");
+        assertEquals(respDto.getItem().getId(), 1L, "Некорректный Id вещи");
+        assertEquals(respDto.getBooker().getId(), 2L, "Некорректный Id пользователя");
+        assertEquals(respDto.getStatus(), BookingStatus.REJECTED, "Некорректный статус");
     }
 
     // подтверждение бронирования. Пользователь не является владельцем вещи
@@ -329,7 +386,7 @@ class BookingServiceImplTest {
             BookingStatus.APPROVED);
 
 
-        when(userRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Ошибка!"));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> bookingService.getBookingByUser(10L, BookingState.ALL, 1, 10));
     }
@@ -401,7 +458,7 @@ class BookingServiceImplTest {
             BookingStatus.APPROVED);
 
 
-        when(userRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Ошибка!"));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> bookingService.getAllBookingOfOwner(10L, BookingState.ALL, 1, 10));
     }

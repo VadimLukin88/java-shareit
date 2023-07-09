@@ -30,9 +30,4 @@ public class Booking {
     private User booker;
     @Enumerated(value = EnumType.STRING)
     private BookingStatus status;
-
-    public Booking(LocalDateTime start, LocalDateTime end) {
-        this.start = start;
-        this.end = end;
-    }
 }

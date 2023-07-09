@@ -7,8 +7,6 @@ import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.model.Comment;
 
-import java.time.LocalDateTime;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CommentMapper {
     public static CommentResponseDto mapCommentToDto(Comment comment) {
@@ -23,7 +21,7 @@ public class CommentMapper {
             commentRequestDto.getText(),
             null,
             null,
-            LocalDateTime.now());
+            commentRequestDto.getCreated());
     }
 
     public static CommentShortDto mapCommentToShort(Comment comment) {

@@ -111,7 +111,7 @@ class ItemServiceImplTest {
     // создание вещи. Пользователь создающий вещь не найден
     @Test
     public void testCreateItemFailOwner() {
-        when(userRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> itemService.createItem(1L, null));
     }
@@ -120,7 +120,7 @@ class ItemServiceImplTest {
     @Test
     public void testCreateItemFailRequestId() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user1));
-        when(itemRequestRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Пользователь не найден"));
+        when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         reqDto = new ItemDto(1L,
                           "name1",
@@ -160,7 +160,7 @@ class ItemServiceImplTest {
     // изменение данных вещи. Вещь с указанным Id не найдена
     @Test
     public void testModifyItemUnknownItem() {
-        when(itemRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Вещь не найдена"));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> itemService.modifyItem(1L, 1L, null));
     }
@@ -168,8 +168,10 @@ class ItemServiceImplTest {
     // получение вещи. Нормальный сценарий
     @Test
     public void testGetItem() {
+        Comment comment = new Comment(1L, "text", item1, user2, LocalDateTime.now());
+
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
-        when(commentRepository.findByItem_Id(anyLong())).thenReturn(new ArrayList<>());
+        when(commentRepository.findByItem_Id(anyLong())).thenReturn(List.of(comment));
 
         respDto = itemService.getItem(1L, 1L);
 
@@ -180,13 +182,13 @@ class ItemServiceImplTest {
         assertEquals(respDto.getDescription(), item1.getDescription(), "Description не равны");
         assertNull(respDto.getLastBooking(), "LastBooking не равен null");
         assertNull(respDto.getNextBooking(), "NextBooking не равен null");
-        assertEquals(respDto.getComments().size(), 0, "Некорректный размер списка комментариев");
+        assertEquals(respDto.getComments().size(), 1, "Некорректный размер списка комментариев");
     }
 
     // получение вещи. Вещь с указанным Id не найдена.
     @Test
     public void testGetItemWrongId() {
-        when(itemRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Вещь не найдена"));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> itemService.getItem(1L, 1L));
     }
@@ -194,8 +196,7 @@ class ItemServiceImplTest {
     // поиск вещи.
     @Test
     public void testFindItems() {
-        when(itemRepository.findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(anyString(),
-                                                                                               anyString()))
+        when(itemRepository.findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(anyString(), anyString()))
             .thenReturn(List.of(item1));
 
         List<ItemDto> dtoList = itemService.findItems("item1");
@@ -230,7 +231,7 @@ class ItemServiceImplTest {
     // получение всех вещей пользователя. Некорректный Id пользователя
     @Test
     public void testGetAllUserItemsWrongId() {
-        when(userRepository.findById(anyLong())).thenThrow(new DataNotFoundException("Пользователь не найден"));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class,() -> itemService.getAllUserItems(1L));
     }

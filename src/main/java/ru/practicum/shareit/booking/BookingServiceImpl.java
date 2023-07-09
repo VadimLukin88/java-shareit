@@ -100,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
 
         Sort sort =  Sort.by("start").descending();
 
-        Pageable pageable = PageRequest.of((from + 1)/size, size, sort);
+        Pageable pageable = PageRequest.of((from + 1) / size, size, sort);
 
         User booker = userRepository.findById(userId)
             .orElseThrow(() -> new DataNotFoundException("Пользователь с Id = " + userId + " не найден!"));

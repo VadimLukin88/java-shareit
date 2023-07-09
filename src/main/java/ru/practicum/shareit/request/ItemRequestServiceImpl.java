@@ -9,8 +9,6 @@ import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemRespDto;
-import ru.practicum.shareit.item.dto.ItemShortDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemReqRespDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.UserRepository;
@@ -72,7 +70,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemReqRespDto> getAllItemRequest(int from, int size, Long requestorId){
+    public List<ItemReqRespDto> getAllItemRequest(int from, int size, Long requestorId) {
         Sort sort =  Sort.by("created").descending();
 
         Pageable pageable = PageRequest.of(from, size, sort);

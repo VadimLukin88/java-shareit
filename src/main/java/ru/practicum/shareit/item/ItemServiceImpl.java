@@ -166,9 +166,9 @@ public class ItemServiceImpl implements ItemService {
     public CommentResponseDto addComment(Long userId, Long itemId, CommentRequestDto commentRequestDto) {
         LocalDateTime now = LocalDateTime.now();
 
+        commentRequestDto.setCreated(now);
         Comment comment = CommentMapper.mapDtoToComment(commentRequestDto);
 
-        comment.setCreated(LocalDateTime.now());
         Booking booking = bookingRepository.findFirstByBooker_IdAndItem_IdAndEndBeforeAndStatusOrderByStartDesc(userId, itemId, now, BookingStatus.APPROVED)
             .orElseThrow(() -> new ValidationException("Вы не бронировали вещь с Id = " + itemId));
 
