@@ -23,7 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceImplTest {
@@ -60,13 +60,14 @@ class BookingServiceImplTest {
     // создание бронирования. Нормальный сценарий
     @Test
     public void testCreateBooking() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 15, 17, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            BookingStatus.WAITING);
-
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 15, 17, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(BookingStatus.WAITING)
+            .build();
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
@@ -80,18 +81,23 @@ class BookingServiceImplTest {
         assertEquals(respDto.getItem().getId(), 1L, "Некорректный Id вещи");
         assertEquals(respDto.getBooker().getId(), 2L, "Некорректный Id пользователя");
 
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
     // создание бронирования. Ошибки валидации дат
     @Test
     public void testCreateBookingWrongDate() {
         // start time = end time
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            BookingStatus.WAITING);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(BookingStatus.WAITING)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
@@ -103,35 +109,46 @@ class BookingServiceImplTest {
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
         assertThrows(ValidationException.class, () -> bookingService.createBooking(reqDto, 2L));
+
+        verify(itemRepository, times(0)).findById(anyLong());
+        verify(userRepository, times(0)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // создание бронирования. Бронирование на собственную вещь
     @Test
     public void testCreateBookingForOwnItem() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user1),
-            BookingStatus.WAITING);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user1))
+            .status(BookingStatus.WAITING)
+            .build();
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
-
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user1);
 
         assertThrows(DataNotFoundException.class, () -> bookingService.createBooking(reqDto, 1L));
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(userRepository, times(0)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // создание бронирования. Не найден пользователь
     @Test
     public void testCreateBookingUnknownUser() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            BookingStatus.WAITING);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(BookingStatus.WAITING)
+            .build();
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
@@ -139,23 +156,33 @@ class BookingServiceImplTest {
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
         assertThrows(DataNotFoundException.class, () -> bookingService.createBooking(reqDto, 2L));
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // создание бронирования. Не найдена вещь
     @Test
     public void testCreateBookingUnknownItem() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            BookingStatus.WAITING);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(BookingStatus.WAITING)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> bookingService.createBooking(reqDto, 2L));
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(userRepository, times(0)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // создание бронирования. Вещь недоступна для бронирования
@@ -163,29 +190,36 @@ class BookingServiceImplTest {
     public void testCreateBookingUnavailableItem() {
         item1.setAvailable(false);
 
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            BookingStatus.WAITING);
-
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(BookingStatus.WAITING)
+            .build();
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
 
         assertThrows(ValidationException.class, () -> bookingService.createBooking(reqDto, 2L));
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(userRepository, times(0)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // подтверждение бронирования. Нормальный сценарий
     @Test
     public void testApproveBooking() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            null);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(BookingStatus.WAITING)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
         booking1.setStatus(BookingStatus.WAITING);
@@ -207,17 +241,22 @@ class BookingServiceImplTest {
         assertEquals(respDto.getItem().getId(), 1L, "Некорректный Id вещи");
         assertEquals(respDto.getBooker().getId(), 2L, "Некорректный Id пользователя");
         assertEquals(respDto.getStatus(), BookingStatus.APPROVED, "Некорректный статус");
+
+        verify(bookingRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
     // отклонение заявки на бронирование. Нормальный сценарий
     @Test
     public void testRejectBooking() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            null);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(null)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
         booking1.setStatus(BookingStatus.WAITING);
@@ -239,35 +278,44 @@ class BookingServiceImplTest {
         assertEquals(respDto.getItem().getId(), 1L, "Некорректный Id вещи");
         assertEquals(respDto.getBooker().getId(), 2L, "Некорректный Id пользователя");
         assertEquals(respDto.getStatus(), BookingStatus.REJECTED, "Некорректный статус");
+
+        verify(bookingRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
     // подтверждение бронирования. Пользователь не является владельцем вещи
     @Test
     public void testApproveBookingWrongOwner() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            null);
-
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(null)
+            .build();
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
         booking1.setStatus(BookingStatus.WAITING);
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking1));
 
         assertThrows(DataNotFoundException.class, () -> bookingService.approveBooking(1L, 2L, true));
+
+        verify(bookingRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // подтверждение бронирования. Статус бронирования != WAITING
     @Test
     public void testApproveBookingWithWrongStatus() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            null);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(null)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
         booking1.setStatus(BookingStatus.APPROVED);
@@ -275,17 +323,22 @@ class BookingServiceImplTest {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking1));
 
         assertThrows(ValidationException.class, () -> bookingService.approveBooking(1L, 1L, true));
+
+        verify(bookingRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(0)).save(any(Booking.class));
     }
 
     // получение бронирования по Id. Нормальный сценарий
     @Test
     public void voidTestGetBookingById() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            null);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(null)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
         booking1.setStatus(BookingStatus.APPROVED);
@@ -298,17 +351,21 @@ class BookingServiceImplTest {
         assertEquals(respDto.getId(),1L, "Некорректный Id бронирования");
         assertEquals(respDto.getItem().getId(),1L, "Некорректный Id вещи");
         assertEquals(respDto.getBooker().getId(),2L, "Некорректный Id пользователя");
+
+        verify(bookingRepository, times(1)).findById(anyLong());
     }
 
     // получение бронирования по Id. Пользователь не является владельцем вещи или бронирования
     @Test
     public void voidTestGetBookingByIdWrongUser() {
-        reqDto = new BookingRequestDto(1L,
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            LocalDateTime.of(2023, 7, 10, 11, 0),
-            1L,
-            UserMapper.mapUserToShortDto(user2),
-            null);
+        reqDto = BookingRequestDto.builder()
+            .id(1L)
+            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
+            .end(LocalDateTime.of(2023, 7, 10, 11, 0))
+            .itemId(1L)
+            .booker(UserMapper.mapUserToShortDto(user2))
+            .status(null)
+            .build();
 
         booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
         booking1.setStatus(BookingStatus.APPROVED);
@@ -316,6 +373,8 @@ class BookingServiceImplTest {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking1));
 
         assertThrows(DataNotFoundException.class, () -> bookingService.getBookingById(1L, 5L));
+
+        verify(bookingRepository, times(1)).findById(anyLong());
     }
 
     // получение всех бронирований пользователя. Нормальный сценарий
@@ -372,6 +431,22 @@ class BookingServiceImplTest {
 
         assertEquals(dtoList.size(), 1, "Некорректный размер списка");
         assertEquals(dtoList.get(0).getId(), 1L, "Некорректный Id бронирования");
+
+        verify(userRepository, times(6)).findById(anyLong());
+        verify(bookingRepository, times(1)).findByBooker(any(User.class), any(Pageable.class));
+        verify(bookingRepository, times(1)).findByBookerAndStartBeforeAndEndAfter(any(User.class),
+                                                                                                        any(LocalDateTime.class),
+                                                                                                        any(LocalDateTime.class),
+                                                                                                        any(Pageable.class));
+        verify(bookingRepository, times(1)).findByBookerAndEndBefore(any(User.class),
+                                                                                           any(LocalDateTime.class),
+                                                                                           any(Pageable.class));
+        verify(bookingRepository, times(1)).findByBookerAndStartAfter(any(User.class),
+                                                                                            any(LocalDateTime.class),
+                                                                                            any(Pageable.class));
+        verify(bookingRepository, times(2)).findByBookerAndStatus(any(User.class),
+                                                                                        any(BookingStatus.class),
+                                                                                        any(Pageable.class));
     }
 
     // получение всех бронирований пользователя. Неизвестный пользователь
@@ -384,10 +459,25 @@ class BookingServiceImplTest {
             user2,
             BookingStatus.APPROVED);
 
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> bookingService.getBookingByUser(10L, BookingState.ALL, 1, 10));
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(0)).findByBooker(any(User.class), any(Pageable.class));
+        verify(bookingRepository, times(0)).findByBookerAndStartBeforeAndEndAfter(any(User.class),
+                                                                                                        any(LocalDateTime.class),
+                                                                                                        any(LocalDateTime.class),
+                                                                                                        any(Pageable.class));
+        verify(bookingRepository, times(0)).findByBookerAndEndBefore(any(User.class),
+                                                                                           any(LocalDateTime.class),
+                                                                                           any(Pageable.class));
+        verify(bookingRepository, times(0)).findByBookerAndStartAfter(any(User.class),
+                                                                                            any(LocalDateTime.class),
+                                                                                            any(Pageable.class));
+        verify(bookingRepository, times(0)).findByBookerAndStatus(any(User.class),
+                                                                                        any(BookingStatus.class),
+                                                                                        any(Pageable.class));
     }
 
     // получение всех бронирований по владельцу. Нормальный сценарий
@@ -399,7 +489,6 @@ class BookingServiceImplTest {
             item1,
             user2,
             BookingStatus.APPROVED);
-
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user1));
         when(bookingRepository.findByItem_Owner(any(User.class), any(Pageable.class))).thenReturn(List.of(booking1));
@@ -444,6 +533,22 @@ class BookingServiceImplTest {
 
         assertEquals(dtoList.size(), 1, "Некорректный размер списка");
         assertEquals(dtoList.get(0).getId(), 1L, "Некорректный Id бронирования");
+
+        verify(userRepository, times(6)).findById(anyLong());
+        verify(bookingRepository, times(1)).findByItem_Owner(any(User.class), any(Pageable.class));
+        verify(bookingRepository, times(1)).findByItem_OwnerAndStartBeforeAndEndAfter(any(User.class),
+                                                                                                            any(LocalDateTime.class),
+                                                                                                            any(LocalDateTime.class),
+                                                                                                            any(Pageable.class));
+        verify(bookingRepository, times(1)).findByItem_OwnerAndEndBefore(any(User.class),
+                                                                                                any(LocalDateTime.class),
+                                                                                                any(Pageable.class));
+        verify(bookingRepository, times(1)).findByItem_OwnerAndStartAfter(any(User.class),
+                                                                                                any(LocalDateTime.class),
+                                                                                                any(Pageable.class));
+        verify(bookingRepository, times(2)).findByItem_OwnerAndStatus(any(User.class),
+                                                                                            any(BookingStatus.class),
+                                                                                            any(Pageable.class));
     }
 
     // получение всех бронирований по владельцу. Неизвестный пользователь
@@ -456,9 +561,24 @@ class BookingServiceImplTest {
             user2,
             BookingStatus.APPROVED);
 
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> bookingService.getAllBookingOfOwner(10L, BookingState.ALL, 1, 10));
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(bookingRepository, times(0)).findByItem_Owner(any(User.class), any(Pageable.class));
+        verify(bookingRepository, times(0)).findByItem_OwnerAndStartBeforeAndEndAfter(any(User.class),
+                                                                                                            any(LocalDateTime.class),
+                                                                                                            any(LocalDateTime.class),
+                                                                                                            any(Pageable.class));
+        verify(bookingRepository, times(0)).findByItem_OwnerAndEndBefore(any(User.class),
+                                                                                                any(LocalDateTime.class),
+                                                                                                any(Pageable.class));
+        verify(bookingRepository, times(0)).findByItem_OwnerAndStartAfter(any(User.class),
+                                                                                                any(LocalDateTime.class),
+                                                                                                any(Pageable.class));
+        verify(bookingRepository, times(0)).findByItem_OwnerAndStatus(any(User.class),
+                                                                                            any(BookingStatus.class),
+                                                                                            any(Pageable.class));
     }
 }

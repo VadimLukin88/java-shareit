@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 public class ItemServiceImpl implements ItemService {
 
@@ -119,7 +121,7 @@ public class ItemServiceImpl implements ItemService {
         }
         List<CommentShortDto> commentList = commentRepository.findByItem_Id(itemId).stream()
             .map(CommentMapper::mapCommentToShort)
-            .collect(Collectors.toList());
+            .collect(toList());
 
         itemDto.setComments(commentList);
         return itemDto;
@@ -130,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) return new ArrayList<>();   // если строка для поиска пустая, возвращаем пустой список
         return itemRepository.findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(text, text).stream()
             .map(ItemMapper::mapItemToDto)
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 
     @Override
@@ -142,7 +144,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemDto> itemDtoList = itemRepository.findItemByOwnerOrderById(owner).stream()
             .map(ItemMapper::mapItemToDto)
-            .collect(Collectors.toList());
+            .collect(toList());
 
         for (ItemDto itemDto : itemDtoList) {   // если вещь запросил хозяин, добавляем даты бронирования
             Long itemId = itemDto.getId();

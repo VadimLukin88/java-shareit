@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,10 +44,15 @@ class ItemRequestControllerTest {
     @BeforeEach
     public void setUp() {
         reqDto = new ItemRequestDto("request description");
-        respDto = new ItemReqRespDto(1L, "request description", LocalDateTime.now(), new ArrayList<>());
+        respDto = ItemReqRespDto.builder()
+            .id(1L)
+            .description("request description")
+            .created(LocalDateTime.now())
+            .items(new ArrayList<>())
+            .build();
     }
 
-    // запрос на создание запроса вещи. Нормальный ссценарий
+    // запрос на создание запроса вещи. Нормальный сценарий
     @Test
     public void testCreateItemRequest() throws Exception {
         when(itemRequestService.createItemRequest(anyLong(), any(ItemRequestDto.class))).thenReturn(respDto);
@@ -62,6 +67,8 @@ class ItemRequestControllerTest {
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.description", is("request description")))
             .andExpect(jsonPath("$.items", hasSize(0)));
+
+        verify(itemRequestService, times(1)).createItemRequest(anyLong(), any(ItemRequestDto.class));
     }
 
     // запрос на создание запроса вещи. Ошибки валидации RequestBody
@@ -88,6 +95,8 @@ class ItemRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemRequestService, times(0)).createItemRequest(anyLong(), any(ItemRequestDto.class));
     }
 
     // запрос на создание запроса вещи. Ошибки в параметрах запроса
@@ -110,6 +119,8 @@ class ItemRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemRequestService, times(0)).createItemRequest(anyLong(), any(ItemRequestDto.class));
     }
 
     // запрос на получение своих запросов вещей. Нормальный сценарий
@@ -126,6 +137,8 @@ class ItemRequestControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[0].description", is("request description")));
+
+        verify(itemRequestService, times(1)).getOwnItemRequest(anyLong());
     }
 
     // запрос на получение своих запросов вещей. Ошибки в параметрах запроса
@@ -139,6 +152,8 @@ class ItemRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemRequestService, times(0)).getOwnItemRequest(anyLong());
     }
 
     // запрос на получение всех запросов вещей. Нормальный сценарий
@@ -158,6 +173,8 @@ class ItemRequestControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[0].description", is("request description")));
+
+        verify(itemRequestService, times(1)).getAllItemRequest(anyInt(), anyInt(), anyLong());
     }
 
     // запрос на получение всех запросов вещей. Ошибки в параметре запроса
@@ -203,6 +220,8 @@ class ItemRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemRequestService, times(0)).getAllItemRequest(anyInt(), anyInt(), anyLong());
     }
 
     // запрос на запроса вещи по Id. Нормальный сценарий
@@ -218,6 +237,8 @@ class ItemRequestControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.description", is("request description")));
+
+        verify(itemRequestService, times(1)).getItemRequestById(anyLong(), anyLong());
     }
 
     // запрос на запроса вещи по Id. Нормальный сценарий
@@ -238,5 +259,7 @@ class ItemRequestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemRequestService, times(0)).getItemRequestById(anyLong(), anyLong());
     }
 }

@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,21 +42,22 @@ class ItemControllerTest {
 
     @BeforeEach
     public void setUp() {
-        dto = new ItemDto(1L,
-            "item1",
-            "description1",
-            true,
-            1L,
-            null,
-            null,
-            null,
-            null);
+        dto = ItemDto.builder()
+            .id(1L)
+            .name("item1")
+            .description("description1")
+            .available(true)
+            .owner(1L)
+            .lastBooking(null)
+            .nextBooking(null)
+            .requestId(null)
+            .comments(null)
+            .build();
     }
 
     // создание вещи. нормальный сценарий
     @Test
     public void testCreateItem() throws Exception {
-
         when(itemService.createItem(anyLong(), ArgumentMatchers.any(ItemDto.class))).thenReturn(dto);
 
         mockMvc.perform(post("/items")
@@ -69,6 +70,8 @@ class ItemControllerTest {
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.name", is("item1")))
             .andExpect(jsonPath("$.description", is("description1")));
+
+        verify(itemService, times(1)).createItem(anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // создание вещи. Имя вещи пустая строка или null
@@ -95,6 +98,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).createItem(anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // создание вещи. Описание вещи пустая строка или null
@@ -119,6 +124,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).createItem(anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // создание вещи. У вещи нет статуса бронирования
@@ -135,7 +142,9 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
-    }
+
+        verify(itemService, times(0)).createItem(anyLong(), ArgumentMatchers.any(ItemDto.class));
+   }
 
     // создание вещи. В запросе нет заголовка X-Sharer-User-Id
     @Test
@@ -148,6 +157,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).createItem(anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // изменение вещи. Нормальный сценарий
@@ -165,6 +176,8 @@ class ItemControllerTest {
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.name", is("item1")))
             .andExpect(jsonPath("$.description", is("description1")));
+
+        verify(itemService, times(1)).modifyItem(anyLong(), anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // изменение вещи. Не найден пользователь/вещь
@@ -181,6 +194,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
+
+        verify(itemService, times(1)).modifyItem(anyLong(), anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // изменение вещи. В запросе не указан Id пользователя/Id вещи
@@ -203,6 +218,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).modifyItem(anyLong(), anyLong(), ArgumentMatchers.any(ItemDto.class));
     }
 
     // получение вещи по Id. Нормальный сценарий
@@ -219,6 +236,8 @@ class ItemControllerTest {
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.name", is("item1")))
             .andExpect(jsonPath("$.description", is("description1")));
+
+        verify(itemService, times(1)).getItem(anyLong(), anyLong());
     }
 
     // получение вещи по Id. Не найден пользователь или вещь
@@ -232,6 +251,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
+
+        verify(itemService, times(1)).getItem(anyLong(), anyLong());
     }
 
     // получение вещи по Id. В запросе нет Id пользователя или Id вещи
@@ -253,6 +274,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).getItem(anyLong(), anyLong());
     }
 
     // поиск вещи по имени или описанию. Нормальный сценарий
@@ -268,6 +291,8 @@ class ItemControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)));
+
+        verify(itemService, times(1)).findItems(anyString());
     }
 
     // поиск вещи по имени или описанию. Поиск по пустой строке
@@ -282,6 +307,8 @@ class ItemControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(itemService, times(1)).findItems(anyString());
     }
 
     // поиск вещи по имени или описанию. Без обязтельного параметра в запросе
@@ -294,6 +321,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).findItems(anyString());
     }
 
     // Получение всех вещей рользователя. Нормальный сценарий
@@ -310,6 +339,8 @@ class ItemControllerTest {
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
             .andExpect(jsonPath("$[0].name", is("item1")));
+
+        verify(itemService, times(1)).getAllUserItems(anyLong());
     }
 
     // Получение всех вещей рользователя. В запросе нет заголовка X-Sharer-User-Id
@@ -322,14 +353,27 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).getAllUserItems(anyLong());
     }
 
     // Добавление комментария. Нормальный сценарий
     @Test
     public void testAddComment() throws Exception {
-        CommentRequestDto reqDto = new CommentRequestDto(null, "comment", 1L, 2L, null);
+        CommentRequestDto reqDto = CommentRequestDto.builder()
+            .id(null)
+            .text("comment")
+            .itemId(1L)
+            .authorId(1L)
+            .created(null)
+            .build();
 
-        CommentResponseDto respDto = new CommentResponseDto(1L, "comment", "user2", LocalDateTime.now());
+        CommentResponseDto respDto = CommentResponseDto.builder()
+            .id(1L)
+            .text("comment")
+            .authorName("user2")
+            .created(LocalDateTime.now())
+            .build();
 
         when(itemService.addComment(anyLong(), anyLong(), ArgumentMatchers.any(CommentRequestDto.class))).thenReturn(respDto);
 
@@ -343,6 +387,8 @@ class ItemControllerTest {
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.text", is("comment")))
             .andExpect(jsonPath("$.created", notNullValue()));
+
+        verify(itemService, times(1)).addComment(anyLong(), anyLong(), ArgumentMatchers.any(CommentRequestDto.class));
     }
 
     // Добавление комментария. Ошибки в запросе
@@ -378,6 +424,8 @@ class ItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(itemService, times(0)).addComment(anyLong(), anyLong(), ArgumentMatchers.any(CommentRequestDto.class));
     }
 
 }

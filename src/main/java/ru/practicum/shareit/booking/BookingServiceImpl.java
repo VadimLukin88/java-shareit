@@ -16,6 +16,7 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -126,10 +127,8 @@ public class BookingServiceImpl implements BookingService {
             case REJECTED:
                 bookingList = bookingRepository.findByBookerAndStatus(booker, BookingStatus.REJECTED, pageable);
                 break;
-            // сначала хотел удалить default ведь теперь у нас валидация параметра происходит в контроллере.
-            // но потом решил оставить... на случай если добавлю новый параметр фильтрации и забуду его реализовать ))
             default:
-                throw new ValidationException("Not implemented yet!");
+                bookingList = new ArrayList<>();
         }
         return bookingList.stream()
             .map(BookingMapper::mapBookingToDto)
@@ -169,7 +168,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingList = bookingRepository.findByItem_OwnerAndStatus(owner, BookingStatus.REJECTED, pageable);
                 break;
             default:
-                throw new ValidationException("Not implemented yet!");
+                bookingList = new ArrayList<>();
         }
         return bookingList.stream()
             .map(BookingMapper::mapBookingToDto)

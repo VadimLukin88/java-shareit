@@ -9,6 +9,7 @@ import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemRespDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemReqRespDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.UserRepository;
@@ -16,8 +17,12 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class ItemRequestServiceImpl implements ItemRequestService {
@@ -57,15 +62,18 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         List<ItemReqRespDto> reqDtoList = itemRequestRepository.findByRequestor_IdOrderByCreatedDesc(requestorId).stream()
             .map(ItemRequestMapper::mapItemRequestToDto)
-            .collect(Collectors.toList());
+            .collect(toList());
 
-        for (ItemReqRespDto dto : reqDtoList) {
-            List<ItemRespDto> items = itemRepository.findByRequest_Id(dto.getId()).stream()
-                .map(ItemMapper::mapItemToRespDto)
-                .collect(Collectors.toList());
+        List<Long> requestIds = reqDtoList.stream().map(ItemReqRespDto::getId).collect(toList());
 
-            dto.setItems(items);
-        }
+        List<Item> items = itemRepository.findByRequest_IdIn(requestIds);
+
+        Map<Long, List<ItemRespDto>> itemsByRequest = items.stream()
+            .map(ItemMapper::mapItemToRespDto)
+            .collect(Collectors.groupingBy(ItemRespDto::getRequestId, toList()));
+
+        reqDtoList.stream().forEach(dto -> dto.setItems(itemsByRequest.getOrDefault(dto.getId(), new ArrayList<>())));
+
         return reqDtoList;
     }
 
@@ -75,17 +83,19 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         Pageable pageable = PageRequest.of(from, size, sort);
 
-        List<ItemRequest> itemRequests = itemRequestRepository.findByRequestor_IdNotOrderByCreatedDesc(pageable, requestorId);
+        List<ItemReqRespDto> dtoList = itemRequestRepository.findByRequestor_IdNotOrderByCreatedDesc(pageable, requestorId)
+            .stream()
+            .map(ItemRequestMapper::mapItemRequestToDto)
+            .collect(toList());
 
-        List<ItemReqRespDto> dtoList = itemRequests.stream().map(ItemRequestMapper::mapItemRequestToDto).collect(Collectors.toList());
+        List<Long> requestIds = dtoList.stream().map(ItemReqRespDto::getId).collect(toList());
 
-        for (ItemReqRespDto dto : dtoList) {
-            List<ItemRespDto> items = itemRepository.findByRequest_Id(dto.getId()).stream()
-                .map(ItemMapper::mapItemToRespDto)
-                .collect(Collectors.toList());
+        Map<Long, List<ItemRespDto>> itemsByRequest = itemRepository.findByRequest_IdIn(requestIds)
+            .stream()
+            .map(ItemMapper::mapItemToRespDto)
+            .collect(Collectors.groupingBy(ItemRespDto::getRequestId, toList()));
 
-            dto.setItems(items);
-        }
+        dtoList.stream().forEach(dto -> dto.setItems(itemsByRequest.getOrDefault(dto.getId(), new ArrayList<>())));
         return dtoList;
     }
 
@@ -101,7 +111,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         List<ItemRespDto> itemDto = itemRepository.findByRequest_Id(requestId).stream()
                             .map(ItemMapper::mapItemToRespDto)
-                            .collect(Collectors.toList());
+                            .collect(toList());
 
         dto.setItems(itemDto);
         return dto;

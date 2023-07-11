@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,24 +45,27 @@ class BookingControllerTest {
 
     @BeforeEach
     public void setUp() {
-        reqDto = new BookingRequestDto(null,
-                                          LocalDateTime.now().plusHours(1L),
-                                          LocalDateTime.now().plusDays(10L),
-                                    1L,
-                                          new UserShortDto(1L, "user2"),
-                                    null);
-        respDto = new BookingResponseDto(1L,
-                                            LocalDateTime.now().plusHours(1L),
-                                            LocalDateTime.now().plusDays(10L),
-                                            new ItemShortDto(1L, "item1"),
-                                            new UserShortDto(2L, "user2"),
-                                            BookingStatus.WAITING);
+        reqDto = BookingRequestDto.builder()
+            .id(null)
+            .start(LocalDateTime.now().plusHours(1L))
+            .end(LocalDateTime.now().plusDays(10L))
+            .itemId(1L)
+            .booker(new UserShortDto(1L, "user2"))
+            .status(null)
+            .build();
+        respDto = BookingResponseDto.builder()
+            .id(1L)
+            .start(LocalDateTime.now().plusHours(1L))
+            .end(LocalDateTime.now().plusDays(10L))
+            .item(new ItemShortDto(1L, "item1"))
+            .booker(new UserShortDto(2L, "user2"))
+            .status(BookingStatus.WAITING)
+            .build();
     }
 
     // запрос на создание бронирования. Нормальный сценарий
     @Test
     public void testCreateBooking() throws Exception {
-
         when(bookingService.createBooking(reqDto, 2L)).thenReturn(respDto);
 
         mockMvc.perform(post("/bookings")
@@ -75,6 +78,8 @@ class BookingControllerTest {
             .andExpect(jsonPath("$.id", is(1)))
             .andExpect(jsonPath("$.item.id", is(1)))
             .andExpect(jsonPath("$.booker.id", is(2)));
+
+        verify(bookingService, times(1)).createBooking(any(BookingRequestDto.class), anyLong());
     }
 
     // запрос на создание бронирования. Ошибки валидации RequestBody
@@ -144,12 +149,13 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(bookingService, times(0)).createBooking(any(BookingRequestDto.class), anyLong());
     }
 
     // запрос на создание бронирования. Отсутствует заголовок X-Sharer-User-Id
     @Test
     public void testCreateBookingWithoutUserId() throws Exception {
-
         when(bookingService.createBooking(reqDto, 2L)).thenReturn(respDto);
 
         mockMvc.perform(post("/bookings")
@@ -158,6 +164,8 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(bookingService, times(0)).createBooking(any(BookingRequestDto.class), anyLong());
     }
 
     // запрос на подтверждение бронирования. Нормальный сценарий
@@ -179,12 +187,13 @@ class BookingControllerTest {
             .andExpect(jsonPath("$.item.id", is(1)))
             .andExpect(jsonPath("$.booker.id", is(2)))
             .andExpect(jsonPath("$.status", is("APPROVED")));
+
+        verify(bookingService, times(1)).approveBooking(anyLong(), anyLong(), anyBoolean());
     }
 
     // запрос на подтверждение бронирования. Отсутcтвуют обязательные элементы в запросе
     @Test
     public void testApproveBookingWrongRequest() throws Exception {
-
         when(bookingService.approveBooking(anyLong(), anyLong(), anyBoolean())).thenReturn(respDto);
 
         // без Id вещи в pathVariable
@@ -214,6 +223,8 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(bookingService, times(0)).approveBooking(anyLong(), anyLong(), anyBoolean());
     }
 
     // получение бронирования по Id. Нормальный сценарий
@@ -234,6 +245,8 @@ class BookingControllerTest {
             .andExpect(jsonPath("$.item.id", is(1)))
             .andExpect(jsonPath("$.booker.id", is(2)))
             .andExpect(jsonPath("$.status", is("APPROVED")));
+
+        verify(bookingService, times(1)).getBookingById(anyLong(), anyLong());
     }
 
     // получение бронирования по Id. Отсутcтвуют обязательные элементы в запросе
@@ -260,6 +273,8 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(bookingService, times(0)).getBookingById(anyLong(), anyLong());
     }
 
     // запрос на получение всех бронирований пользователя. Нормальный сценарий
@@ -285,6 +300,8 @@ class BookingControllerTest {
             .andExpect(jsonPath("$[0].item.id", is(1)))
             .andExpect(jsonPath("$[0].booker.id", is(2)))
             .andExpect(jsonPath("$[0].status", is("APPROVED")));
+
+        verify(bookingService, times(1)).getBookingByUser(anyLong(),any(BookingState.class), anyInt(), anyInt());
     }
 
     // запрос на получение всех бронирований пользователя. Ошибки валидации параметров запроса
@@ -353,6 +370,8 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(bookingService, times(0)).getBookingByUser(anyLong(),any(BookingState.class), anyInt(), anyInt());
     }
 
     // запрос на получение всех бронирований для владельца вещей. Нормальный сценарий
@@ -378,6 +397,8 @@ class BookingControllerTest {
             .andExpect(jsonPath("$[0].item.id", is(1)))
             .andExpect(jsonPath("$[0].booker.id", is(2)))
             .andExpect(jsonPath("$[0].status", is("APPROVED")));
+
+        verify(bookingService, times(1)).getAllBookingOfOwner(anyLong(),any(BookingState.class), anyInt(), anyInt());
     }
 
     // запрос на получение всех бронирований для владельца вещей. Ошибки валидации параметров запроса
@@ -446,5 +467,7 @@ class BookingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+
+        verify(bookingService, times(0)).getAllBookingOfOwner(anyLong(),any(BookingState.class), anyInt(), anyInt());
     }
 }

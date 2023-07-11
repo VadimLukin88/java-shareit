@@ -26,7 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceImplTest {
@@ -85,15 +85,17 @@ class ItemServiceImplTest {
         when(itemRepository.save(any(Item.class))).thenReturn(item1);
 
         item1.setRequest(request);
-        reqDto = new ItemDto(1L,
-                        "name1",
-                    "description1",
-                      true,
-                        1L,
-                    null,
-                   null,
-                     1L,
-                     null);
+        reqDto = ItemDto.builder()
+            .id(1L)
+            .name("name1")
+            .description("description1")
+            .available(true)
+            .owner(1L)
+            .lastBooking(null)
+            .nextBooking(null)
+            .requestId(1L)
+            .comments(null)
+            .build();
         respDto = itemService.createItem(1L, reqDto);
 
         assertEquals(respDto.getId(), reqDto.getId(), "Id не совпадают");
@@ -105,6 +107,10 @@ class ItemServiceImplTest {
         assertNull(respDto.getNextBooking(), "NextBooking не равно Null");
         assertEquals(respDto.getRequestId(), reqDto.getRequestId(), "RequestId не равны");
         assertNull(respDto.getComments(), "Comments не равно Null");
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(itemRequestRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(1)).save(any(Item.class));
     }
 
 
@@ -114,6 +120,10 @@ class ItemServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> itemService.createItem(1L, null));
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(itemRequestRepository, times(0)).findById(anyLong());
+        verify(itemRepository, times(0)).save(any(Item.class));
     }
 
     // создание вещи. Указанный запрос на создание вещи не нейден
@@ -122,17 +132,23 @@ class ItemServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user1));
         when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        reqDto = new ItemDto(1L,
-                          "name1",
-                      "description1",
-                        true,
-                          1L,
-                      null,
-                     null,
-                       1L,
-                       null);
+        reqDto = ItemDto.builder()
+            .id(1L)
+            .name("name1")
+            .description("description1")
+            .available(true)
+            .owner(1L)
+            .lastBooking(null)
+            .nextBooking(null)
+            .requestId(1L)
+            .comments(null)
+            .build();
 
         assertThrows(DataNotFoundException.class, () -> itemService.createItem(1L, reqDto));
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(itemRequestRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(0)).save(any(Item.class));
     }
 
     // изменение данных вещи. Нормальный сценарий
@@ -141,20 +157,25 @@ class ItemServiceImplTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
         when(itemRepository.save(any(Item.class))).thenReturn(item1);
 
-        reqDto = new ItemDto(1L,
-            "name1",
-            "description1",
-            true,
-            1L,
-            null,
-            null,
-            null,
-            null);
+        reqDto =  ItemDto.builder()
+            .id(1L)
+            .name("name1")
+            .description("description1")
+            .available(true)
+            .owner(1L)
+            .lastBooking(null)
+            .nextBooking(null)
+            .requestId(null)
+            .comments(null)
+            .build();
         respDto = itemService.modifyItem(1L, 1L, reqDto);
 
         assertEquals(respDto.getName(), reqDto.getName(), "Name не совпадают");
         assertEquals(respDto.getDescription(), reqDto.getDescription(), "Description не совпадают");
         assertEquals(respDto.getAvailable(), reqDto.getAvailable(), "Available не совпадают");
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(1)).save(any(Item.class));
     }
 
     // изменение данных вещи. Вещь с указанным Id не найдена
@@ -163,6 +184,9 @@ class ItemServiceImplTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> itemService.modifyItem(1L, 1L, null));
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(0)).save(any(Item.class));
     }
 
     // получение вещи. Нормальный сценарий
@@ -183,6 +207,9 @@ class ItemServiceImplTest {
         assertNull(respDto.getLastBooking(), "LastBooking не равен null");
         assertNull(respDto.getNextBooking(), "NextBooking не равен null");
         assertEquals(respDto.getComments().size(), 1, "Некорректный размер списка комментариев");
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(commentRepository, times(1)).findByItem_Id(anyLong());
     }
 
     // получение вещи. Вещь с указанным Id не найдена.
@@ -191,6 +218,9 @@ class ItemServiceImplTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> itemService.getItem(1L, 1L));
+
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(commentRepository, times(0)).findByItem_Id(anyLong());
     }
 
     // поиск вещи.
@@ -206,6 +236,8 @@ class ItemServiceImplTest {
 
         dtoList = itemService.findItems("");
         assertEquals(dtoList.size(), 0, "Некорректный размер списка");
+
+        verify(itemRepository, times(1)).findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(anyString(), anyString());
     }
 
     // получение всех вещей пользователя. Нормальный сценарий
@@ -226,6 +258,10 @@ class ItemServiceImplTest {
         assertEquals(dtoList.size(), 2L, "Некоррктный размер списка");
         assertEquals(dtoList.get(0), dto1, "Найденный объект не совпадает с исходным");
         assertEquals(dtoList.get(1), dto2, "Найденный объект не совпадает с исходным");
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(1)).findItemByOwnerOrderById(any(User.class));
+        verify(commentRepository, times(2)).findByItem_Id(anyLong());
     }
 
     // получение всех вещей пользователя. Некорректный Id пользователя
@@ -234,12 +270,22 @@ class ItemServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class,() -> itemService.getAllUserItems(1L));
+
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(0)).findItemByOwnerOrderById(any(User.class));
+        verify(commentRepository, times(0)).findByItem_Id(anyLong());
     }
 
     // добавление комментария к вещи
     @Test
     public void testAddComment() {
-        CommentRequestDto commentReqDto = new CommentRequestDto(1L, "text of comment", 1L, 1L, LocalDateTime.now());
+        CommentRequestDto commentReqDto = CommentRequestDto.builder()
+            .id(1L)
+            .text("text of comment")
+            .itemId(1L)
+            .authorId(1L)
+            .created(LocalDateTime.now())
+            .build();
 
         Comment comment = new Comment(1L, "text of comment", item1, user2, LocalDateTime.now());
 
@@ -258,5 +304,13 @@ class ItemServiceImplTest {
         assertNotNull(responseDto.getCreated(), "Не указано время создания");
         assertEquals(responseDto.getId(), 1, "Некорректный Id комментария");
         assertEquals(responseDto.getAuthorName(), "name2", "Некорректно имя автора");
+
+        verify(bookingRepository, times(1)).findFirstByBooker_IdAndItem_IdAndEndBeforeAndStatusOrderByStartDesc(anyLong(),
+                                                                                                                                      anyLong(),
+                                                                                                                                      any(LocalDateTime.class),
+                                                                                                                                      any(BookingStatus.class));
+        verify(userRepository, times(1)).findById(anyLong());
+        verify(itemRepository, times(1)).findById(anyLong());
+        verify(commentRepository, times(1)).save(any(Comment.class));
     }
 }
