@@ -10,6 +10,8 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.OnCreate;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -48,9 +50,14 @@ public class BookingController {
         return bookingService.getBookingById(bookingId, userId);
     }
 
+    //TODO Сделать постраничный вывод результатов
     @GetMapping
     public List<BookingResponseDto> getBookingByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                    @RequestParam(defaultValue = "ALL", required = false) String state) {
+                                                     @RequestParam(defaultValue = "ALL", required = false) String state,
+                                                     @PositiveOrZero(message = "Индекс страницы не может быть отрицательным!")
+                                                     @RequestParam(defaultValue = "0", required = false) int from,
+                                                     @Positive(message = "Размер страницы должен быть больше 0!")
+                                                     @RequestParam(defaultValue = "5", required = false) int size) {
         log.info("HTTP_GET: Получен запрос на получение всех бронирований пользоваетеля с Id = {}", userId);
         BookingState bookingState;
 
@@ -59,12 +66,17 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return bookingService.getBookingByUser(userId, bookingState);
+        return bookingService.getBookingByUser(userId, bookingState, from, size);
     }
 
+    //TODO Сделать постраничный вывод результатов
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllBookingOfOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                        @RequestParam(defaultValue = "ALL", required = false) String state) {
+                                                         @RequestParam(defaultValue = "ALL", required = false) String state,
+                                                         @PositiveOrZero(message = "Индекс страницы не может быть отрицательным!")
+                                                         @RequestParam(defaultValue = "0", required = false) int from,
+                                                         @Positive(message = "Размер страницы должен быть больше 0!")
+                                                         @RequestParam(defaultValue = "5", required = false) int size) {
         log.info("HTTP_GET: Получен запрос на получение всех бронирований для вещей пользоваетеля с Id = {}", userId);
         BookingState bookingState;
 
@@ -73,7 +85,7 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return bookingService.getAllBookingOfOwner(userId, bookingState);
+        return bookingService.getAllBookingOfOwner(userId, bookingState, from, size);
     }
 
 }

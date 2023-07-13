@@ -14,6 +14,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.exception.DataNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -23,24 +25,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Service
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
-
     private final CommentRepository commentRepository;
+
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserRepository userRepository,
                            BookingRepository bookingRepository,
-                           CommentRepository commentRepository) {
+                           CommentRepository commentRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
@@ -51,7 +58,17 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = ItemMapper.mapDtoToItem(itemDto);
 
+        if (itemDto.getRequestId() != null) {
+            long reqId = itemDto.getRequestId();
+
+            ItemRequest itemRequest = itemRequestRepository.findById(reqId)
+                .orElseThrow(() -> new DataNotFoundException("Запрос с Id = " + reqId + " не найден!"));
+
+            item.setRequest(itemRequest);
+        }
+
         item.setOwner(user);
+
         return ItemMapper.mapItemToDto(itemRepository.save(item));
     }
 
@@ -104,7 +121,7 @@ public class ItemServiceImpl implements ItemService {
         }
         List<CommentShortDto> commentList = commentRepository.findByItem_Id(itemId).stream()
             .map(CommentMapper::mapCommentToShort)
-            .collect(Collectors.toList());
+            .collect(toList());
 
         itemDto.setComments(commentList);
         return itemDto;
@@ -115,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) return new ArrayList<>();   // если строка для поиска пустая, возвращаем пустой список
         return itemRepository.findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(text, text).stream()
             .map(ItemMapper::mapItemToDto)
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 
     @Override
@@ -127,7 +144,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemDto> itemDtoList = itemRepository.findItemByOwnerOrderById(owner).stream()
             .map(ItemMapper::mapItemToDto)
-            .collect(Collectors.toList());
+            .collect(toList());
 
         for (ItemDto itemDto : itemDtoList) {   // если вещь запросил хозяин, добавляем даты бронирования
             Long itemId = itemDto.getId();
@@ -151,9 +168,9 @@ public class ItemServiceImpl implements ItemService {
     public CommentResponseDto addComment(Long userId, Long itemId, CommentRequestDto commentRequestDto) {
         LocalDateTime now = LocalDateTime.now();
 
+        commentRequestDto.setCreated(now);
         Comment comment = CommentMapper.mapDtoToComment(commentRequestDto);
 
-        comment.setCreated(LocalDateTime.now());
         Booking booking = bookingRepository.findFirstByBooker_IdAndItem_IdAndEndBeforeAndStatusOrderByStartDesc(userId, itemId, now, BookingStatus.APPROVED)
             .orElseThrow(() -> new ValidationException("Вы не бронировали вещь с Id = " + itemId));
 

@@ -10,8 +10,13 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
+    // TODO переписать на JPQL
     List<Item> findItemByNameOrDescriptionContainsAllIgnoreCaseAndAvailableIsTrue(String searchName, String searchDesc);
 
+    // TODO переписать на UserId
     List<Item> findItemByOwnerOrderById(User owner);
 
+    List<Item> findByRequest_Id(Long requestId);
+
+    List<Item> findByRequest_IdIn(List<Long> requestIds);
 }

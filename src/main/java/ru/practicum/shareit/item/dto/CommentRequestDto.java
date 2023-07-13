@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.user.dto.OnCreate;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class CommentRequestDto {
     @Null(groups = OnCreate.class, message = "Id для нового комментария назначается автоматически.")
     private Long id;

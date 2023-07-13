@@ -22,6 +22,6 @@ public class ItemRequest {
     @ManyToOne
     @JoinColumn(name = "requestor_id")
     private User requestor; // пользователь, создавший запрос
-    @Transient
+    @Column(name = "created")
     private LocalDateTime created;  // дата и время создания запроса
 }
