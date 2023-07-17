@@ -47,7 +47,7 @@ public class UserController {
     @PatchMapping("/{userId}")
     @Validated(OnUpdate.class)
     public ResponseEntity<Object> modifyUser(@PathVariable Long userId,
-                              @Valid @RequestBody UserDto userDto) {
+                                             @Valid @RequestBody UserDto userDto) {
         log.info("HTTP_PATCH: Получен запрос на изменение пользователя с Id = " + userId
                   + ". Обновляемые данные: " + userDto);
         return userClient.modifyUser(userId, userDto);

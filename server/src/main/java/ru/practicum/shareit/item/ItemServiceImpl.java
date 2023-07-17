@@ -93,9 +93,6 @@ public class ItemServiceImpl implements ItemService {
         if (item.getAvailable() != null) {
             savedItem.setAvailable(item.getAvailable());
         }
-//        if (item.getOwner() != null) {
-//            savedItem.setOwner(item.getOwner());
-//        }
         if (item.getRequest() != null) {
             savedItem.setRequest(item.getRequest());
         }

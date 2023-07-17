@@ -15,9 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CommentMapperTest {
 
-    // все тесты в данном классе не имеют абсолютно никакого смысла и написаны исключительно для увеличения процента
-    // покрытия кода
-
     private User user;
     private Item item;
     private Comment comment;

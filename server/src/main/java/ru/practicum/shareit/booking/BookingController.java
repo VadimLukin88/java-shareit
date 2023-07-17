@@ -13,7 +13,6 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(path = "/bookings")
-//@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -24,7 +23,6 @@ public class BookingController {
     }
 
     @PostMapping
-//    @Validated(OnCreate.class)
     public BookingResponseDto createBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                             @RequestBody BookingRequestDto bookingRequestDto) {
         log.info("HTTP_POST: Получен запрос на создания бронирования вещи с Id = {} от пользователя Id = {}", bookingRequestDto.getItemId(), userId);
@@ -49,9 +47,7 @@ public class BookingController {
     @GetMapping
     public List<BookingResponseDto> getBookingByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                      @RequestParam(defaultValue = "ALL", required = false) String state,
-//                                                     @PositiveOrZero(message = "Индекс страницы не может быть отрицательным!")
                                                      @RequestParam(defaultValue = "0", required = false) int from,
-//                                                     @Positive(message = "Размер страницы должен быть больше 0!")
                                                      @RequestParam(defaultValue = "5", required = false) int size) {
         log.info("HTTP_GET: Получен запрос на получение всех бронирований пользоваетеля с Id = {}", userId);
         BookingState bookingState;
@@ -67,9 +63,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllBookingOfOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                          @RequestParam(defaultValue = "ALL", required = false) String state,
-//                                                         @PositiveOrZero(message = "Индекс страницы не может быть отрицательным!")
                                                          @RequestParam(defaultValue = "0", required = false) int from,
-//                                                         @Positive(message = "Размер страницы должен быть больше 0!")
                                                          @RequestParam(defaultValue = "5", required = false) int size) {
         log.info("HTTP_GET: Получен запрос на получение всех бронирований для вещей пользоваетеля с Id = {}", userId);
         BookingState bookingState;

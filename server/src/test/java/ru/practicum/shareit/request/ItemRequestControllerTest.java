@@ -70,34 +70,6 @@ class ItemRequestControllerTest {
         verify(itemRequestService, times(1)).createItemRequest(anyLong(), any(ItemRequestDto.class));
     }
 
-    // запрос на создание запроса вещи. Ошибки валидации RequestBody
-//    @Test
-//    public void testCreateItemRequestWithWrongBody() throws Exception {
-//        reqDto.setDescription(null);
-//
-//        when(itemRequestService.createItemRequest(anyLong(), any(ItemRequestDto.class))).thenReturn(respDto);
-//
-//        mockMvc.perform(post("/requests")
-//                .content(objectMapper.writeValueAsString(reqDto))
-//                .header("X-Sharer-User-Id", 1L)
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//
-//        reqDto.setDescription("");
-//
-//        mockMvc.perform(post("/requests")
-//                .content(objectMapper.writeValueAsString(reqDto))
-//                .header("X-Sharer-User-Id", 1L)
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//
-//        verify(itemRequestService, times(0)).createItemRequest(anyLong(), any(ItemRequestDto.class));
-//    }
-
     // запрос на создание запроса вещи. Ошибки в параметрах запроса
     @Test
     public void testCreateItemRequestWithWrongParameters() throws Exception {
@@ -175,53 +147,6 @@ class ItemRequestControllerTest {
 
         verify(itemRequestService, times(1)).getAllItemRequest(anyInt(), anyInt(), anyLong());
     }
-
-    // запрос на получение всех запросов вещей. Ошибки в параметре запроса
-//    @Test
-//    public void testGetAllItemRequestWithWrongParameter() throws Exception {
-//        when(itemRequestService.getAllItemRequest(anyInt(), anyInt(), anyLong())).thenReturn(List.of(respDto));
-//
-//        // запрос без заголовкаX-Sharer-User-Id
-//        mockMvc.perform(get("/requests/all")
-//                .param("from", "1")
-//                .param("size", "10")
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//
-//        // индекс страницы отрицательный (from)
-//        mockMvc.perform(get("/requests/all")
-//                .header("X-Sharer-User-Id", 1L)
-//                .param("from", "-1")
-//                .param("size", "10")
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//
-//        // размер страницы отрицательный (size)
-//        mockMvc.perform(get("/requests/all")
-//                .header("X-Sharer-User-Id", 1L)
-//                .param("from", "1")
-//                .param("size", "-10")
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//
-//        // размер страницы равен 0 (size)
-//        mockMvc.perform(get("/requests/all")
-//                .header("X-Sharer-User-Id", 1L)
-//                .param("from", "1")
-//                .param("size", "-10")
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//
-//        verify(itemRequestService, times(0)).getAllItemRequest(anyInt(), anyInt(), anyLong());
-//    }
 
     // запрос на запроса вещи по Id. Нормальный сценарий
     @Test

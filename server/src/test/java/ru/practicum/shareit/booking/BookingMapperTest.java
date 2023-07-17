@@ -18,9 +18,9 @@ class BookingMapperTest {
 
     @Test
     public void testMapDtoToBooking() {
-        LocalDateTime start = LocalDateTime.of(2023, 7, 4, 22, 00);
+        LocalDateTime start = LocalDateTime.of(2023, 7, 4, 22, 0);
 
-        LocalDateTime end = LocalDateTime.of(2023, 7, 5, 22, 00);
+        LocalDateTime end = LocalDateTime.of(2023, 7, 5, 22, 0);
 
         User user = new User(1L, "name", "email@ya.ru");
 
@@ -44,9 +44,9 @@ class BookingMapperTest {
 
     @Test
     public void testMapBookingToDto() {
-        LocalDateTime start = LocalDateTime.of(2023, 7, 4, 22, 00);
+        LocalDateTime start = LocalDateTime.of(2023, 7, 4, 22, 0);
 
-        LocalDateTime end = LocalDateTime.of(2023, 7, 5, 22, 00);
+        LocalDateTime end = LocalDateTime.of(2023, 7, 5, 22, 0);
 
         User user = new User(1L, "name", "email@ya.ru");
 
@@ -66,9 +66,9 @@ class BookingMapperTest {
 
     @Test
     public void testMapBookingToShortDto() {
-        LocalDateTime start = LocalDateTime.of(2023, 7, 4, 22, 00);
+        LocalDateTime start = LocalDateTime.of(2023, 7, 4, 22, 0);
 
-        LocalDateTime end = LocalDateTime.of(2023, 7, 5, 22, 00);
+        LocalDateTime end = LocalDateTime.of(2023, 7, 5, 22, 0);
 
         User user = new User(1L, "name", "email@ya.ru");
 

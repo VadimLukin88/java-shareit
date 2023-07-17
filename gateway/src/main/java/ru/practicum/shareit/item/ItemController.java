@@ -11,6 +11,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.OnCreate;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 
 @Slf4j
 @Controller
@@ -51,6 +52,9 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> findItems(@RequestParam String text) {
+        if (text.isBlank() || text == null) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
         log.info("HTTP_GET: Получен запрос на поиск предмета. Поисковый запрос: " + text);
         return itemClient.findItems(text);
     }

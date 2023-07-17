@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ItemMapperTest {
-    // все тесты в данном классе не имеют абсолютно никакого смысла и написаны исключительно для увеличения процента
-    // покрытия кода
 
     @Test
     public void testMapItemToDto() {

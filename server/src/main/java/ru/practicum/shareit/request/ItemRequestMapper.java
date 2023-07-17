@@ -25,7 +25,7 @@ public class ItemRequestMapper {
         return new ItemReqRespDto(itemRequest.getId(),
                                   itemRequest.getDescription(),
                                   itemRequest.getCreated(),
-                            new ArrayList<>());
+                                  new ArrayList<>());
     }
 
 }

@@ -9,9 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserMapperTest {
 
-    // все тесты в данном классе не имеют абсолютно никакого смысла и написаны исключительно для увеличения процента
-    // покрытия кода
-
     @Test
     public void testMapUserToDto() {
         User user = new User(1L, "name", "email");

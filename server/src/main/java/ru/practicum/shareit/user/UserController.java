@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -9,14 +8,12 @@ import ru.practicum.shareit.user.dto.OnCreate;
 import ru.practicum.shareit.user.dto.OnUpdate;
 import ru.practicum.shareit.user.dto.UserDto;
 
-//import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
-//@Validated
 public class UserController {
     private final UserService userService;
 

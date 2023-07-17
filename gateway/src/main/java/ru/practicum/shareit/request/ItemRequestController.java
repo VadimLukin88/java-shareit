@@ -34,12 +34,7 @@ public class ItemRequestController {
         return itemRequestClient.createItemRequest(requestorId, itemRequestDto);
     }
 
-//    получить список своих запросов вместе с данными об ответах на них.
-//    Для каждого запроса должны указываться описание, дата и время создания и список ответов в формате:
-//    id вещи, название,
-//    id владельца.
-//    Так в дальнейшем, используя указанные id вещей, можно будет получить подробную информацию о каждой вещи.
-//    Запросы должны возвращаться в отсортированном порядке от более новых к более старым.
+    //    получить список своих запросов вместе с данными об ответах на них.
     @GetMapping
     public ResponseEntity<Object> getOwnItemRequest(@RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info("HTTP_POST: Получен запрос на собственные реквесты от пользователя с Id = {} ", requestorId);
@@ -47,25 +42,18 @@ public class ItemRequestController {
     }
 
     //получить список запросов, созданных другими пользователями.
-    // С помощью этого эндпоинта пользователи смогут просматривать существующие запросы,
-    // на которые они могли бы ответить.
-    // Запросы сортируются по дате создания: от более новых к более старым.
-    // Результаты должны возвращаться постранично. Для этого нужно передать два параметра:
-    // from — индекс первого элемента, начиная с 0, и
-    // size — количество элементов для отображения.
-
     @GetMapping("/all")
     public ResponseEntity<Object> getAllItemRequest(@RequestHeader("X-Sharer-User-Id") Long requestorId,
                                             @PositiveOrZero(message = "Индекс страницы не может быть отрицательным!")
-                                            @RequestParam(defaultValue = "0", required = false) int from,
+                                            @RequestParam(defaultValue = "0") int from,
                                             @Positive(message = "Размер страницы должен быть больше 0!")
-                                            @RequestParam(defaultValue = "5", required = false) int size) {
+                                            @RequestParam(defaultValue = "5") int size) {
         log.info("HTTP_POST: Получен запрос на все реквесты от пользователя с Id = {} ", requestorId);
         return itemRequestClient.getAllItemRequest(from, size, requestorId);
     }
 
     //получить данные об одном конкретном запросе вместе с данными об ответах на него в том же формате,
-    // что и в эндпоинте GET /requests. Посмотреть данные об отдельном запросе может любой пользователь.
+    // что и в эндпоинте GET /requests.
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getItemRequestById(@RequestHeader("X-Sharer-User-Id") Long requestorId,
                                              @PathVariable Long requestId) {

@@ -86,35 +86,6 @@ class BookingServiceImplTest {
         verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
-    // создание бронирования. Ошибки валидации дат
-//    @Test
-//    public void testCreateBookingWrongDate() {
-//        // start time = end time
-//        reqDto = BookingRequestDto.builder()
-//            .id(1L)
-//            .start(LocalDateTime.of(2023, 7, 5, 11, 0))
-//            .end(LocalDateTime.of(2023, 7, 5, 11, 0))
-//            .itemId(1L)
-//            .booker(UserMapper.mapUserToShortDto(user2))
-//            .status(BookingStatus.WAITING)
-//            .build();
-//
-//        booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
-//
-//        assertThrows(ValidationException.class, () -> bookingService.createBooking(reqDto, 2L));
-//
-//        // start time > end time
-//        reqDto.setEnd(LocalDateTime.of(2023, 6, 5, 11, 0));
-//
-//        booking1 = BookingMapper.mapDtoToBooking(reqDto, item1, user2);
-//
-//        assertThrows(ValidationException.class, () -> bookingService.createBooking(reqDto, 2L));
-//
-//        verify(itemRepository, times(0)).findById(anyLong());
-//        verify(userRepository, times(0)).findById(anyLong());
-//        verify(bookingRepository, times(0)).save(any(Booking.class));
-//    }
-
     // создание бронирования. Бронирование на собственную вещь
     @Test
     public void testCreateBookingForOwnItem() {

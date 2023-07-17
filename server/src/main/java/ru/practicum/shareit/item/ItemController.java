@@ -9,12 +9,10 @@ import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.OnCreate;
 
-//import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
 @RestController
-//@Validated
 @RequestMapping("/items")
 public class ItemController {
 

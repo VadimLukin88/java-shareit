@@ -18,12 +18,6 @@ import java.util.TreeMap;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-//    @ExceptionHandler(DataNotFoundException.class)
-//    @ResponseBody
-//    public ResponseEntity<Map<String, String>> handleDataNotFoundException(DataNotFoundException e) {
-//        return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.NOT_FOUND);
-//    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
     ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -52,13 +46,6 @@ public class GlobalExceptionHandler {
     ResponseEntity<Map<String, String>> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
         return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
-
-//    @ExceptionHandler(DataIntegrityViolationException.class)
-//    @ResponseBody
-//    ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-//         return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.CONFLICT);
-//    }
-
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseBody

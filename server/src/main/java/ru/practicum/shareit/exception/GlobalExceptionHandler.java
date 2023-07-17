@@ -1,6 +1,5 @@
 package ru.practicum.shareit.exception;
 
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-//import javax.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -42,12 +40,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(ConstraintViolationException.class)
-//    @ResponseBody
-//    ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException e) {
-//        return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.BAD_REQUEST);
-//    }
-
     @ExceptionHandler(MissingRequestHeaderException.class)
     @ResponseBody
     ResponseEntity<Map<String, String>> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
@@ -59,7 +51,6 @@ public class GlobalExceptionHandler {
     ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
          return new ResponseEntity<>(Map.of("Error message", e.getMessage()), HttpStatus.CONFLICT);
     }
-
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseBody

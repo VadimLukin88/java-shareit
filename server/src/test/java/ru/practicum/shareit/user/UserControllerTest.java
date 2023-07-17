@@ -115,51 +115,6 @@ class UserControllerTest {
             .andExpect(jsonPath("$.email", is("email@ya.ru")));
     }
 
-    // создание пользователя с пустым именем
-//    @Test
-//    public void testCreateUserWithEmptyName()  throws Exception {
-//        UserDto dto1 = new UserDto(1L, "", "email@ya.ru");
-//
-//        when(userService.createUser(any(UserDto.class))).thenReturn(dto1);
-//
-//        mockMvc.perform(post("/users")
-//                .content(objectMapper.writeValueAsString(dto1))
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//    }
-
-    // создание пользователя с пустым email
-//    @Test
-//    public void testCreateUserWithEmptyEmail()  throws Exception {
-//        UserDto dto1 = new UserDto(1L, "name1", "");
-//
-//        when(userService.createUser(any(UserDto.class))).thenReturn(dto1);
-//
-//        mockMvc.perform(post("/users")
-//                .content(objectMapper.writeValueAsString(dto1))
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//    }
-
-    // создание пользователя с некорректным email
-//    @Test
-//    public void testCreateUserWithIncorrectEmail() throws Exception {
-//        UserDto dto1 = new UserDto(1L, "name1", "email1");
-//
-//        when(userService.createUser(any(UserDto.class))).thenReturn(dto1);
-//
-//        mockMvc.perform(post("/users")
-//                .content(objectMapper.writeValueAsString(dto1))
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//    }
-
     // изменение данных пользователя. Нормальный сценарий
     @Test
     public void testModifyUser() throws Exception {
@@ -177,21 +132,6 @@ class UserControllerTest {
             .andExpect(jsonPath("$.name", is("name1")))
             .andExpect(jsonPath("$.email", is("email@ya.ru")));
     }
-
-    // изменение данных пользователя. Указан некорректный email
-//    @Test
-//    public void testModifyUserWithIncorrectEmail() throws Exception {
-//        UserDto dto1 = new UserDto(1L, "name1", "email1");
-//
-//        when(userService.modifyUser(anyLong(), any(UserDto.class))).thenReturn(dto1);
-//
-//        mockMvc.perform(patch("/users/1")
-//                .content(objectMapper.writeValueAsString(dto1))
-//                .characterEncoding(StandardCharsets.UTF_8)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .accept(MediaType.APPLICATION_JSON))
-//            .andExpect(status().isBadRequest());
-//    }
 
     // изменение данных пользователя. Указан несуществующий Id пользователя
     @Test

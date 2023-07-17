@@ -13,13 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ItemDto {
-//    @Null(groups = OnCreate.class, message = "При добавлении вещи Id назначается автоматически.")
     private Long id;
-//    @NotBlank(groups = OnCreate.class, message = "У вещи должно быть имя.")
     private String name;
-//    @NotBlank(groups = OnCreate.class, message = "У вещи должно быть описание.")
-   private String description;
-//    @NotNull(groups = OnCreate.class, message = "У вещи должен быть статус бронирования.")
+    private String description;
     private Boolean available;
     private Long owner;
     private BookingShortDto lastBooking;

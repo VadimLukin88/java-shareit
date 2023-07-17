@@ -14,7 +14,6 @@ import java.util.List;
 public class ItemReqRespDto {
     private Long id;
     private String description;
-//    private Long requestor; // id пользователя, создавшего запрос
     private LocalDateTime created;  // дата и время создания запроса
     private List<ItemRespDto> items;
 }
